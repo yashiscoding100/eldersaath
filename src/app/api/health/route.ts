@@ -1,0 +1,41 @@
+import { NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
+
+export async function POST(req: Request) {
+  const session = await auth()
+  if (!session || session.user.role !== "ELDER") {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const data = await req.json()
+    const { bp, sugar, spo2, pulse, temperature, weight } = data
+    
+    const measurements: { type: string; value: string; unit: string }[] = []
+    
+    if (bp) measurements.push({ type: "BP", value: bp, unit: "mmHg" })
+    if (sugar) measurements.push({ type: "SUGAR", value: sugar, unit: "mg/dL" })
+    if (spo2) measurements.push({ type: "SPO2", value: spo2, unit: "%" })
+    if (pulse) measurements.push({ type: "PULSE", value: pulse, unit: "BPM" })
+    if (temperature) measurements.push({ type: "TEMP", value: temperature, unit: "°F" })
+    if (weight) measurements.push({ type: "WEIGHT", value: weight, unit: "kg" })
+    
+    for (const m of measurements) {
+      await prisma.healthMeasurement.create({
+        data: {
+          elderId: session.user.id,
+          type: m.type,
+          value: m.value,
+          unit: m.unit,
+          source: "MANUAL"
+        }
+      })
+    }
+
+    return NextResponse.json({ message: "Saved successfully", count: measurements.length }, { status: 201 })
+  } catch (error) {
+    console.error("Health API error:", error)
+    return NextResponse.json({ message: "Failed to save health data" }, { status: 500 })
+  }
+}

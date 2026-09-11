@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("CHILD") // "ELDER", "CHILD", "DOCTOR", etc.
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  elderProfile  ElderProfile?
+  
+  // Relationships
+  eldersCaredFor CaregiverRelationship[] @relation("ChildToRelationship")
+  caregivers     CaregiverRelationship[] @relation("ElderToRelationship")
+  
+  measurements   HealthMeasurement[]
+  medications    Medication[]
+  medicationLogs MedicationLog[]
+  elderTasks     Task[] @relation("ElderTasks")
+  assignedTasks  Task[] @relation("AssignedTasks")
+
+  emergencyEvents   EmergencyEvent[]
+  medicalDocuments  MedicalDocument[] @relation("ElderDocuments")
+  uploadedDocuments MedicalDocument[] @relation("UploadedDocuments")
+  careProviders     CareProvider[]
+}
+
+model ElderProfile {
+  id                String  @id @default(cuid())
+  userId            String  @unique
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  dateOfBirth       DateTime?
+  gender            String?
+  bloodGroup        String?
+  allergies         String?
+  medicalConditions String?
+  preferredHospital String?
+  notes             String?
+}
+
+model CaregiverRelationship {
+  id        String   @id @default(cuid())
+  elderId   String
+  childId   String
+  status    String   @default("PENDING") // "PENDING", "ACTIVE"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  elder     User     @relation("ElderToRelationship", fields: [elderId], references: [id], onDelete: Cascade)
+  child     User     @relation("ChildToRelationship", fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([elderId, childId])
+}
+
+model HealthMeasurement {
+  id        String   @id @default(cuid())
+  elderId   String
+  elder     User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  type      String   // "BP", "SUGAR", "SPO2", "PULSE", "TEMP", "WEIGHT"
+  value     String   // E.g., "138/86", "112"
+  unit      String?
+  source    String   @default("MANUAL") // "MANUAL", "OCR", "DEVICE"
+  timestamp DateTime @default(now())
+  notes     String?
+}
+
+model Medication {
+  id           String   @id @default(cuid())
+  elderId      String
+  elder        User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  name         String
+  dosage       String
+  frequency    String
+  time         String   // E.g., "08:00 AM"
+  instructions String?
+  startDate    DateTime?
+  endDate      DateTime?
+  
+  logs         MedicationLog[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MedicationLog {
+  id           String     @id @default(cuid())
+  medicationId String
+  medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
+  elderId      String
+  elder        User       @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  status       String     // "TAKEN", "MISSED", "SKIPPED", "SNOOZED"
+  timestamp    DateTime   @default(now())
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  elderId      String
+  elder        User       @relation("ElderTasks", fields: [elderId], references: [id], onDelete: Cascade)
+  assignerId   String
+  assigner     User       @relation("AssignedTasks", fields: [assignerId], references: [id], onDelete: Cascade)
+  
+  title        String
+  description  String?
+  frequency    String     @default("DAILY")
+  
+  logs         TaskLog[]
+  createdAt    DateTime   @default(now())
+}
+
+model TaskLog {
+  id           String     @id @default(cuid())
+  taskId       String
+  task         Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  elderId      String
+  
+  status       String     @default("COMPLETED")
+  timestamp    DateTime   @default(now())
+}
+
+model EmergencyEvent {
+  id          String   @id @default(cuid())
+  elderId     String
+  elder       User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  latitude    Float?
+  longitude   Float?
+  status      String   @default("ACTIVE") // "ACTIVE", "RESOLVED"
+  resolvedAt  DateTime?
+  timestamp   DateTime @default(now())
+}
+
+model MedicalDocument {
+  id          String   @id @default(cuid())
+  elderId     String
+  elder       User     @relation("ElderDocuments", fields: [elderId], references: [id], onDelete: Cascade)
+  uploaderId  String
+  uploader    User     @relation("UploadedDocuments", fields: [uploaderId], references: [id], onDelete: Cascade)
+  
+  title       String
+  fileUrl     String
+  fileType    String
+  uploadedAt  DateTime @default(now())
+}
+
+model CareProvider {
+  id          String   @id @default(cuid())
+  elderId     String
+  elder       User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  name        String
+  role        String   // "DOCTOR", "NURSE", "PHYSIO"
+  phone       String?
+  email       String?
+  createdAt   DateTime @default(now())
+}

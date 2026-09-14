@@ -17,7 +17,9 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          String    @default("CHILD") // "ELDER", "CHILD", "DOCTOR", etc.
+  role          String    @default("CHILD")
+  isBlocked     Boolean   @default(false)
+  blockMessage  String? // "ELDER", "CHILD", "DOCTOR", etc.
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -187,3 +189,4 @@ model Notice {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 }
+

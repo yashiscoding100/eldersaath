@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/LogoutButton"
 import { TestAlarmButton } from "./TestAlarmButton"
 import { PendingConnections } from "./PendingConnections"
+import { GlobalNotice } from "@/components/GlobalNotice"
 
 export default async function ElderHome() {
   const session = await auth()
@@ -52,6 +53,7 @@ export default async function ElderHome() {
 
       <div className="w-full max-w-md px-6 space-y-5 flex-1">
         
+        <GlobalNotice />
         <PendingConnections requests={pendingRequests} />
 
         {/* Health Check - Massive Action Button */}

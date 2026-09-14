@@ -3,6 +3,7 @@ import { LogoutButton } from "@/components/LogoutButton"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { GlobalNotice } from "@/components/GlobalNotice"
 
 export default async function ChildDashboard() {
   const session = await auth()
@@ -72,6 +73,8 @@ export default async function ChildDashboard() {
             <LogoutButton />
           </div>
         </header>
+
+        <GlobalNotice />
 
         {relationships.length === 0 ? (
           <div className="bg-white/50 backdrop-blur-xl p-16 text-center rounded-[2.5rem] shadow-sm ring-1 ring-gray-900/5">

@@ -31,29 +31,29 @@ export function PendingConnections({ requests }: { requests: PendingRequest[] })
   if (pending.length === 0) return null
 
   return (
-    <div className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 mb-4 shadow-sm">
-      <h3 className="text-xl font-bold text-indigo-900 mb-2 flex items-center">
-        <span className="text-2xl mr-2">👋</span> New Connection Requests
+    <div className="w-full bg-gradient-to-br from-indigo-50 to-blue-50 border-4 border-indigo-100 rounded-[2.5rem] p-6 mb-6 shadow-lg shadow-indigo-900/5">
+      <h3 className="text-2xl font-black text-indigo-950 mb-4 flex items-center">
+        <span className="text-4xl mr-3">👋</span> New Request!
       </h3>
-      <div className="space-y-3">
+      <div className="space-y-4">
         {pending.map(req => (
-          <div key={req.id} className="bg-white p-4 rounded-xl border border-indigo-100 flex flex-col gap-3">
+          <div key={req.id} className="bg-white p-6 rounded-[2rem] border-4 border-indigo-50 flex flex-col gap-5 shadow-sm">
             <div>
-              <p className="font-bold text-gray-900 text-lg">{req.child.name || "A family member"}</p>
-              <p className="text-gray-500">{req.child.email}</p>
+              <p className="font-black text-gray-900 text-2xl">{req.child.name || "A family member"}</p>
+              <p className="text-gray-600 font-bold text-lg mt-1">wants to connect</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-3">
               <button 
                 onClick={() => handleAction(req.id, "APPROVE")}
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition"
+                className="w-full bg-gradient-to-b from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white font-black text-2xl py-5 rounded-[1.5rem] transition-all transform active:scale-95 shadow-md border-4 border-indigo-800"
               >
-                Allow Access
+                ✅ Allow Access
               </button>
               <button 
                 onClick={() => handleAction(req.id, "REJECT")}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition"
+                className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xl py-4 rounded-[1.5rem] transition-all transform active:scale-95 border-4 border-gray-200"
               >
-                Deny
+                ❌ Deny
               </button>
             </div>
           </div>

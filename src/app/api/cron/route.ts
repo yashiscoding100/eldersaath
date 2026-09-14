@@ -16,12 +16,7 @@ export async function GET(req: Request) {
     // 3. Dispatch Push Notifications or SMS via Twilio
     
     // Simulating finding users to notify
-    const logsCreated = await prisma.medicationLog.createMany({
-        data: [
-            // Dummy data to show cron ran
-        ],
-        skipDuplicates: true
-    })
+    // (createMany is not supported in some DBs, commenting out dummy block)
 
     console.log("[CRON] Checking medication schedules...")
     

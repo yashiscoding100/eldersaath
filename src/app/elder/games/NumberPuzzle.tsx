@@ -10,7 +10,7 @@ export default function NumberPuzzle() {
 
   const generateQuestion = () => {
     const isAddition = Math.random() > 0.5
-    let n1, n2, ans
+    let n1: number, n2: number, ans: number
     
     if (isAddition) {
       n1 = Math.floor(Math.random() * 20) + 1

@@ -37,6 +37,7 @@ model User {
   medicalDocuments  MedicalDocument[] @relation("ElderDocuments")
   uploadedDocuments MedicalDocument[] @relation("UploadedDocuments")
   careProviders     CareProvider[]
+  resetTokens       PasswordResetToken[]
 }
 
 model ElderProfile {
@@ -169,4 +170,12 @@ model CareProvider {
   phone       String?
   email       String?
   createdAt   DateTime @default(now())
+}
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

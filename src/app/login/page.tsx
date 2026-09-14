@@ -75,6 +75,11 @@ export default function LoginPage() {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
+            <div className="flex justify-end mt-2">
+              <Link href="/forgot-password" className="text-sm text-blue-700 font-bold hover:underline">
+                Forgot Password?
+              </Link>
+            </div>
           </div>
 
           <button

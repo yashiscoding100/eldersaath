@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { LinkRow } from "./LinkRow"
+import { CreateLinkModal } from "./CreateLinkModal"
 
 export default async function AdminLinksPage() {
   const links = await prisma.caregiverRelationship.findMany({
@@ -12,9 +13,12 @@ export default async function AdminLinksPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <header>
-        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Connection Management</h2>
-        <p className="text-slate-500 mt-2">View and manage links between Elders and Family Members.</p>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Connection Management</h2>
+          <p className="text-slate-500 mt-2">View and manage links between Elders and Family Members.</p>
+        </div>
+        <CreateLinkModal />
       </header>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { AddVitalsModal } from "./AddVitalsModal"
 
 export default async function ChildHealthHistory() {
   const session = await auth()
@@ -10,7 +11,7 @@ export default async function ChildHealthHistory() {
   }
 
   const relationship = await prisma.caregiverRelationship.findFirst({
-    where: { childId: session.user.id },
+    where: { childId: session.user.id, status: "ACTIVE" },
     include: { elder: true },
   })
 
@@ -43,7 +44,10 @@ export default async function ChildHealthHistory() {
             <h1 className="text-2xl font-bold text-gray-900">Health History Timeline</h1>
             <p className="text-gray-600 font-medium">Historical records for {relationship.elder.name}</p>
           </div>
-          <a href="/child/dashboard" className="text-blue-600 font-bold hover:underline">← Back to Dashboard</a>
+          <div className="flex items-center gap-4">
+            <AddVitalsModal elderId={relationship.elderId} />
+            <a href="/child/dashboard" className="text-blue-600 font-bold hover:underline">← Back</a>
+          </div>
         </header>
 
         <div className="space-y-6">

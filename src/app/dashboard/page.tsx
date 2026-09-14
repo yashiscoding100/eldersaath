@@ -12,11 +12,13 @@ export default async function DashboardPage() {
     redirect("/elder/home")
   } else if (session.user.role === "CHILD") {
     redirect("/child/dashboard")
+  } else if (session.user.role === "ADMIN") {
+    redirect("/admin")
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <p>Redirecting...</p>
+      <p>Unknown role. Please contact support.</p>
     </div>
   )
 }

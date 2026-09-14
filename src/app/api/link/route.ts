@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       data: {
         elderId: elderUser.id,
         childId: session.user.id,
-        status: "ACTIVE", // Auto-active for simplicity in this phase
+        status: "PENDING", // Requires Elder approval
       },
     })
 

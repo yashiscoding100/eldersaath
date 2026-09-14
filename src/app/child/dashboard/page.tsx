@@ -83,52 +83,67 @@ export default async function ChildDashboard() {
               <div key={rel.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-xl font-bold text-gray-800">{rel.elder.name}</h2>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    healthCheckDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                  }`}>
-                    {healthCheckDone ? 'Check-in Done' : 'Pending Check-in'}
-                  </span>
+                  {rel.status === "PENDING" ? (
+                    <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                      Pending Approval
+                    </span>
+                  ) : (
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      healthCheckDone ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {healthCheckDone ? 'Check-in Done' : 'Pending Check-in'}
+                    </span>
+                  )}
                 </div>
 
-                {/* Health Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500">BP</p>
-                    <p className="font-bold text-gray-800 text-lg">{bp}</p>
+                {rel.status === "PENDING" ? (
+                  <div className="bg-orange-50 border border-orange-100 p-6 rounded-xl text-center">
+                    <p className="text-orange-800 font-bold mb-2">Request Sent Successfully</p>
+                    <p className="text-orange-700">Waiting for {rel.elder.name} to approve your connection request from their dashboard.</p>
                   </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500">Sugar</p>
-                    <p className="font-bold text-gray-800 text-lg">{sugar}</p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500">SpO2</p>
-                    <p className="font-bold text-gray-800 text-lg">{spo2}{spo2 !== "—" ? "%" : ""}</p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500">Pulse</p>
-                    <p className="font-bold text-gray-800 text-lg">{pulse}{pulse !== "—" ? " BPM" : ""}</p>
-                  </div>
-                </div>
+                ) : (
+                  <>
+                    {/* Health Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-500">BP</p>
+                        <p className="font-bold text-gray-800 text-lg">{bp}</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-500">Sugar</p>
+                        <p className="font-bold text-gray-800 text-lg">{sugar}</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-500">SpO2</p>
+                        <p className="font-bold text-gray-800 text-lg">{spo2}{spo2 !== "—" ? "%" : ""}</p>
+                      </div>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-500">Pulse</p>
+                        <p className="font-bold text-gray-800 text-lg">{pulse}{pulse !== "—" ? " BPM" : ""}</p>
+                      </div>
+                    </div>
 
-                {/* Medicines & Quick Actions */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-500">Medicines</p>
-                    <p className="font-bold text-gray-800">{takenMeds}/{totalMeds} taken</p>
-                  </div>
-                  <a href="/child/health" className="bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition block">
-                    <p className="text-sm text-blue-500">Health History</p>
-                    <p className="font-bold text-blue-700">View →</p>
-                  </a>
-                  <a href="/child/medications" className="bg-emerald-50 p-4 rounded-lg hover:bg-emerald-100 transition block">
-                    <p className="text-sm text-emerald-500">Medications</p>
-                    <p className="font-bold text-emerald-700">Manage →</p>
-                  </a>
-                  <a href="/child/tasks" className="bg-purple-50 p-4 rounded-lg hover:bg-purple-100 transition block">
-                    <p className="text-sm text-purple-500">Tasks</p>
-                    <p className="font-bold text-purple-700">Manage →</p>
-                  </a>
-                </div>
+                    {/* Medicines & Quick Actions */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-500">Medicines</p>
+                        <p className="font-bold text-gray-800">{takenMeds}/{totalMeds} taken</p>
+                      </div>
+                      <a href="/child/health" className="bg-blue-50 p-4 rounded-lg hover:bg-blue-100 transition block">
+                        <p className="text-sm text-blue-500">Health History</p>
+                        <p className="font-bold text-blue-700">View →</p>
+                      </a>
+                      <a href="/child/medications" className="bg-emerald-50 p-4 rounded-lg hover:bg-emerald-100 transition block">
+                        <p className="text-sm text-emerald-500">Medications</p>
+                        <p className="font-bold text-emerald-700">Manage →</p>
+                      </a>
+                      <a href="/child/tasks" className="bg-purple-50 p-4 rounded-lg hover:bg-purple-100 transition block">
+                        <p className="text-sm text-purple-500">Tasks</p>
+                        <p className="font-bold text-purple-700">Manage →</p>
+                      </a>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>

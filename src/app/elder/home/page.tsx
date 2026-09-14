@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/LogoutButton"
 import { TestAlarmButton } from "./TestAlarmButton"
+import { PendingConnections } from "./PendingConnections"
 
 export default async function ElderHome() {
   const session = await auth()
@@ -28,6 +29,12 @@ export default async function ElderHome() {
     }
   })
 
+  // Get pending connection requests
+  const pendingRequests = await prisma.caregiverRelationship.findMany({
+    where: { elderId: session.user.id, status: "PENDING" },
+    include: { child: { select: { name: true, email: true } } }
+  })
+
   const totalMeds = medications.length
   const takenMeds = medications.filter(m => m.logs.some(l => l.status === "TAKEN")).length
   const healthCheckDone = todayMeasurements.length > 0
@@ -44,6 +51,8 @@ export default async function ElderHome() {
 
       <div className="w-full max-w-md p-6 space-y-4 mt-4 flex-1">
         
+        <PendingConnections requests={pendingRequests} />
+
         <a href="/elder/checkin" className={`block w-full rounded-2xl p-6 text-left shadow-sm transition-colors flex items-center justify-between border ${
           healthCheckDone ? 'bg-green-50 border-green-200' : 'bg-blue-100 hover:bg-blue-200 border-blue-200'
         }`}>

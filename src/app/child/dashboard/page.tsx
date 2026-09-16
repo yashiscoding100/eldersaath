@@ -262,6 +262,48 @@ export default async function ChildDashboard() {
                       <HealthCharts measurements={allMeasurements} variant="child" />
                     </div>
                   </div>
+
+                  {/* Recent Activity Timeline */}
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="border-b border-slate-100 p-5 bg-slate-50/50">
+                      <h3 className="font-bold text-slate-900 text-base">Recent Activity</h3>
+                    </div>
+                    <div className="p-5">
+                      <div className="relative border-l border-slate-200 ml-3 space-y-6">
+                        {allMeasurements.slice(0, 2).map((m, i) => (
+                          <div key={`m-${i}`} className="relative pl-6">
+                            <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-blue-500 ring-4 ring-white"></span>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold text-slate-900">Health check completed</p>
+                                <p className="text-xs text-slate-500">Recorded {m.type} as {m.value} {m.unit}</p>
+                              </div>
+                              <span className="text-xs font-medium text-slate-400">
+                                {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                        {emergency && (
+                          <div className="relative pl-6">
+                            <span className="absolute -left-1.5 top-1 w-3 h-3 rounded-full bg-red-500 ring-4 ring-white"></span>
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold text-red-600">SOS Triggered</p>
+                                <p className="text-xs text-slate-500">Emergency escalation initiated</p>
+                              </div>
+                              <span className="text-xs font-medium text-slate-400">
+                                {emergency.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        {!emergency && allMeasurements.length === 0 && (
+                          <p className="text-sm text-slate-500 ml-6">No recent activity.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
             </div>

@@ -12,6 +12,7 @@
     "@auth/prisma-adapter": "^2.11.3",
     "@hookform/resolvers": "^5.9.1",
     "@prisma/client": "^5.10.0",
+    "@types/web-push": "^3.6.4",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.33.0",
@@ -22,6 +23,7 @@
     "react-hook-form": "^7.85.0",
     "recharts": "^3.10.1",
     "tesseract.js": "^7.0.0",
+    "web-push": "^3.6.7",
     "zod": "^3.25.76"
   },
   "devDependencies": {

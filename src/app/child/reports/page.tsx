@@ -4,7 +4,11 @@ import { prisma } from "@/lib/prisma"
 import { PrintButton } from "./PrintButton"
 import { format } from "date-fns"
 
-export default async function ChildReports() {
+export default async function ChildReports({
+  searchParams,
+}: {
+  searchParams: { period?: string }
+}) {
   const session = await auth()
   
   if (!session || session.user.role !== "CHILD") {
@@ -25,12 +29,14 @@ export default async function ChildReports() {
     )
   }
 
-  // Fetch last 30 days of data
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const periodDays = searchParams.period === "7" ? 7 : 30
+
+  // Fetch data based on period
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - periodDays)
 
   const measurements = await prisma.healthMeasurement.findMany({
-    where: { elderId: relationship.elderId, timestamp: { gte: thirtyDaysAgo } },
+    where: { elderId: relationship.elderId, timestamp: { gte: cutoffDate } },
     orderBy: { timestamp: 'desc' }
   })
 
@@ -38,7 +44,7 @@ export default async function ChildReports() {
     where: { elderId: relationship.elderId },
     include: {
       logs: {
-        where: { timestamp: { gte: thirtyDaysAgo } }
+        where: { timestamp: { gte: cutoffDate } }
       }
     }
   })
@@ -46,7 +52,7 @@ export default async function ChildReports() {
   // Calculations
   const symptomsList = measurements.filter(m => m.type === "SYMPTOMS")
   
-  const totalMedsExpected = meds.length * 30 // Rough estimate for 30 days
+  const totalMedsExpected = meds.length * periodDays // Rough estimate
   const medsTaken = meds.reduce((acc, med) => acc + med.logs.filter(l => l.status === "TAKEN").length, 0)
   const adherenceRate = totalMedsExpected > 0 ? Math.round((medsTaken / totalMedsExpected) * 100) : 0
 
@@ -57,7 +63,13 @@ export default async function ChildReports() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Health Reports</h1>
           <p className="text-sm text-slate-500 mt-1">Generate and export automated health analytics.</p>
         </div>
-        <PrintButton />
+        <div className="flex gap-4 items-center">
+          <div className="bg-slate-100 p-1 rounded-lg flex text-sm font-medium">
+            <a href="?period=7" className={`px-4 py-1.5 rounded-md transition ${periodDays === 7 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Weekly</a>
+            <a href="?period=30" className={`px-4 py-1.5 rounded-md transition ${periodDays === 30 ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}>Monthly</a>
+          </div>
+          <PrintButton />
+        </div>
       </header>
 
       {/* Printable Report Container */}
@@ -68,7 +80,7 @@ export default async function ChildReports() {
           <div className="flex justify-between items-end">
             <div>
               <h2 className="text-3xl font-black text-slate-900">ElderSaath Health Report</h2>
-              <p className="text-slate-600 font-medium mt-1">30-Day Analytics Summary</p>
+              <p className="text-slate-600 font-medium mt-1">{periodDays}-Day Analytics Summary</p>
             </div>
             <div className="text-right">
               <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">Patient</p>

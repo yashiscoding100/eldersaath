@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { EditProfileForm } from "./EditProfileForm"
 import { PushNotificationSettings } from "./PushNotificationSettings"
 import { HealthParameterSettings } from "./HealthParameterSettings"
+import { PushSubscriptionManager } from "@/components/PushSubscriptionManager"
 
 export default async function ChildSettings() {
   const session = await auth()
@@ -13,9 +14,12 @@ export default async function ChildSettings() {
   }
 
   const relationship = await prisma.caregiverRelationship.findFirst({
-    where: { childId: session.user.id, status: "ACTIVE" },
-    include: { elder: { include: { elderProfile: true } } }
+    where: { childId: session.user.id },
+    include: { elder: { include: { elderProfile: true } } },
   })
+  
+  // Safe fetch for ElderProfile - don't crash if it doesn't exist yet
+  const elderProfile = relationship?.elder?.elderProfile || null
 
   return (
     <div className="space-y-6">
@@ -24,6 +28,7 @@ export default async function ChildSettings() {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Account Settings</h1>
           <p className="text-sm text-slate-500 mt-1">Manage your profile and notification preferences.</p>
         </div>
+        <PushSubscriptionManager />
       </header>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden divide-y divide-slate-100">

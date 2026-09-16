@@ -6,6 +6,7 @@ import { TestAlarmButton } from "./TestAlarmButton"
 import { PendingConnections } from "./PendingConnections"
 import { GlobalNotice } from "@/components/GlobalNotice"
 import { HealthCharts } from "@/components/HealthCharts"
+import { PushSubscriptionManager } from "@/components/PushSubscriptionManager"
 
 export default async function ElderHome() {
   const session = await auth()
@@ -61,7 +62,10 @@ export default async function ElderHome() {
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Hello, {session.user.name?.split(" ")[0]}!</h1>
             <p className="text-slate-500 font-medium mt-1">Here is your daily care schedule.</p>
           </div>
-          <LogoutButton />
+          <div className="flex items-center gap-4">
+            <PushSubscriptionManager />
+            <LogoutButton />
+          </div>
         </div>
       </div>
 

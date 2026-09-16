@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { UploadDocumentForm } from "./UploadDocumentForm"
+import { DocumentRow } from "./DocumentRow"
 
 export default async function ChildDocuments() {
   const session = await auth()
@@ -62,29 +63,7 @@ export default async function ChildDocuments() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {documents.map(doc => (
-                  <tr key={doc.id} className="hover:bg-slate-50 transition group">
-                    <td className="p-4 px-6 font-bold text-slate-900 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
-                        {doc.fileType.includes("pdf") ? "📄" : "🖼️"}
-                      </div>
-                      {doc.title}
-                    </td>
-                    <td className="p-4 px-6 text-slate-500 font-medium uppercase text-xs tracking-wider">
-                      {doc.fileType.split('/')[1] || doc.fileType}
-                    </td>
-                    <td className="p-4 px-6 text-slate-600 font-medium">
-                      {doc.uploadedAt.toLocaleDateString()}
-                    </td>
-                    <td className="p-4 px-6 text-right">
-                      <a 
-                        href={doc.fileUrl} 
-                        download={`${doc.title}.${doc.fileType.split('/')[1] || 'pdf'}`}
-                        className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block opacity-0 group-hover:opacity-100"
-                      >
-                        View
-                      </a>
-                    </td>
-                  </tr>
+                  <DocumentRow key={doc.id} doc={doc} />
                 ))}
               </tbody>
             </table>

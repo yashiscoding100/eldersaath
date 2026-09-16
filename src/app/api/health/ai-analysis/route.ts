@@ -81,8 +81,32 @@ export async function GET(req: Request) {
     issues.push(`recent symptoms reported (${recentSymptoms})`)
   }
 
+  // Check Missed Check-ins
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  const recentMeasurements = measurements.filter(m => m.timestamp >= sevenDaysAgo)
+  const distinctDays = new Set(recentMeasurements.map(m => new Date(m.timestamp).toDateString())).size
+  if (distinctDays < 4) {
+    issues.push("check-in consistency has declined recently")
+  }
+
+  // Check Medication Adherence
+  const medLogs = await prisma.medicationLog.findMany({
+    where: { 
+      medication: { elderId },
+      timestamp: { gte: sevenDaysAgo }
+    }
+  })
+  
+  if (medLogs.length > 0) {
+    const missed = medLogs.filter(l => l.status === "MISSED").length
+    const adherence = (medLogs.length - missed) / medLogs.length
+    if (adherence < 0.7) {
+      issues.push("medication adherence has been unusually low")
+    }
+  }
+
   if (issues.length > 0) {
-    insight = `We noticed that ${issues.join(", and ")}. Consider discussing this trend with a healthcare professional.`
+    insight = `We noticed that ${issues.join(", and ")}. You may want to discuss this pattern with a healthcare professional.`
   }
 
   return NextResponse.json({

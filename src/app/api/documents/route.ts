@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { uploadDocument, deleteDocument } from "@/lib/storage"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -23,15 +24,16 @@ export async function POST(req: Request) {
        return NextResponse.json({ message: "Unauthorized for this elder" }, { status: 403 })
     }
 
-    // In a real production app, `fileData` would be uploaded to S3 or similar.
-    // For MVP, we'll assume `fileData` is a base64 string or just a mock URL.
+    const safeFilename = `${elderId}-${Date.now()}`
+    const fileUrl = await uploadDocument(fileData, safeFilename)
+
     const document = await prisma.medicalDocument.create({
       data: {
         elderId,
         uploaderId: session.user.id,
         title,
         fileType,
-        fileUrl: fileData // Storing base64 directly for demo (not recommended for prod)
+        fileUrl
       }
     })
     
@@ -69,4 +71,46 @@ export async function GET(req: Request) {
   })
 
   return NextResponse.json(docs, { status: 200 })
+}
+
+export async function DELETE(req: Request) {
+  const session = await auth()
+  
+  if (!session || session.user.role !== "CHILD") {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
+
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get("id")
+
+    if (!id) return NextResponse.json({ message: "Missing document id" }, { status: 400 })
+
+    const document = await prisma.medicalDocument.findUnique({
+      where: { id }
+    })
+
+    if (!document) return NextResponse.json({ message: "Not found" }, { status: 404 })
+
+    // Security Authorization Check - Ensure this child actually manages this elder
+    const relationship = await prisma.caregiverRelationship.findUnique({
+      where: {
+        elderId_childId: { elderId: document.elderId, childId: session.user.id }
+      }
+    })
+
+    if (!relationship || relationship.status !== "ACTIVE") {
+       return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+    }
+
+    await deleteDocument(document.fileUrl)
+
+    await prisma.medicalDocument.delete({
+      where: { id }
+    })
+
+    return NextResponse.json({ message: "Deleted successfully" }, { status: 200 })
+  } catch (error) {
+    return NextResponse.json({ message: "Failed to delete document" }, { status: 500 })
+  }
 }

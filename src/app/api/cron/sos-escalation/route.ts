@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
+import { sendPushNotification } from "@/lib/push"
+
 // This route should be called periodically by Vercel Cron (e.g. every 1-5 minutes)
 export async function GET(req: Request) {
   try {
     // 1. Find all ACTIVE emergencies
     const activeEmergencies = await prisma.emergencyEvent.findMany({
-      where: { status: "ACTIVE" }
+      where: { status: "ACTIVE" },
+      include: { elder: { include: { careProviders: true } } }
     })
 
     const now = new Date()
@@ -29,9 +32,19 @@ export async function GET(req: Request) {
         
         escalatedCount++
         
-        // In a full production app, this is where you would trigger:
-        // if (expectedLevel === 2) -> Send SMS to secondary contacts
-        // if (expectedLevel === 3) -> Trigger automated phone call to emergency services
+        // Notify Care Providers
+        const relationship = await prisma.caregiverRelationship.findMany({
+          where: { elderId: emergency.elderId, status: "ACTIVE" }
+        })
+
+        for (const rel of relationship) {
+          await sendPushNotification(rel.childId, {
+            title: `URGENT: SOS Escalation Level ${expectedLevel}`,
+            body: `${emergency.elder.name}'s SOS alarm is unacknowledged!`,
+            url: "/child/emergency"
+          })
+        }
+
         console.log(`[SOS Cron] Escalated emergency ${emergency.id} to level ${expectedLevel}`)
       }
     }

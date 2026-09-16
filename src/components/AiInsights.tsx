@@ -36,7 +36,7 @@ export function AiInsights({ elderId }: { elderId: string }) {
   if (!insight) return null
 
   return (
-    <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-indigo-100/50 shadow-sm relative overflow-hidden h-full">
+    <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-indigo-100/50 shadow-sm relative overflow-hidden h-full flex flex-col justify-center">
       <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl transform translate-x-4 -translate-y-4">✨</div>
       <div className="flex gap-4 relative z-10">
         <div className="text-2xl mt-1">🤖</div>

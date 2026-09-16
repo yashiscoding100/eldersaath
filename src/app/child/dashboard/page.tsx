@@ -238,10 +238,12 @@ export default async function ChildDashboard() {
 
                   {/* AI & Charts Grid */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-1">
-                      <AiInsights elderId={rel.elderId} />
+                    <div className="lg:col-span-1 flex flex-col">
+                      <div className="flex-1 min-h-0">
+                        <AiInsights elderId={rel.elderId} />
+                      </div>
                       
-                      <div className="bg-white rounded-xl shadow-sm border border-slate-200 mt-6 p-5">
+                      <div className="bg-white rounded-xl shadow-sm border border-slate-200 mt-6 p-5 shrink-0">
                         <h4 className="text-sm font-bold text-slate-900 mb-4">Medication Adherence</h4>
                         <div className="flex items-end gap-3 mb-2">
                           <span className="text-3xl font-black tracking-tight text-slate-900">

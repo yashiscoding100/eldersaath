@@ -47,92 +47,103 @@ export default async function ElderHome() {
   const healthCheckDone = todayMeasurements.length > 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-amber-50 flex flex-col items-center pb-8">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center pb-8">
       {/* Premium Header */}
-      <div className="w-full max-w-md p-8 bg-white shadow-xl shadow-blue-900/5 rounded-b-[2.5rem] border-b-4 border-blue-100 mb-6">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight">Hello, {session.user.name?.split(" ")[0]}!</h1>
+      <div className="w-full bg-white shadow-sm border-b border-slate-200 mb-6">
+        <div className="max-w-4xl mx-auto px-6 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Hello, {session.user.name?.split(" ")[0]}!</h1>
+            <p className="text-slate-500 font-medium mt-1">Here is your daily care schedule.</p>
+          </div>
           <LogoutButton />
         </div>
-        <p className="text-2xl text-gray-700 font-medium leading-snug">Here is your daily care schedule.</p>
       </div>
 
-      <div className="w-full max-w-md px-6 space-y-5 flex-1">
+      <div className="w-full max-w-4xl px-6 space-y-6 flex-1">
         
         <GlobalNotice />
         <PendingConnections requests={pendingRequests} />
 
-        {/* Health Check - Massive Action Button */}
-        <a href="/elder/checkin" className={`block w-full rounded-[2.5rem] p-8 text-left transition-all transform active:scale-95 shadow-lg border-4 flex items-center justify-between ${
-          healthCheckDone 
-            ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-200 shadow-green-900/10' 
-            : 'bg-gradient-to-br from-blue-500 to-blue-600 border-blue-700 shadow-blue-900/20 text-white hover:from-blue-600 hover:to-blue-700'
-        }`}>
-          <div>
-            <h2 className={`text-3xl font-black ${healthCheckDone ? 'text-green-800' : 'text-white'}`}>Health Check</h2>
-            <p className={`text-xl font-bold mt-2 ${healthCheckDone ? 'text-green-700' : 'text-blue-100'}`}>
-              {healthCheckDone ? '✅ Completed today' : 'Tap here to record vitals'}
-            </p>
-          </div>
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-inner text-3xl ${healthCheckDone ? 'bg-white' : 'bg-blue-800/50'}`}>
-            ❤️
-          </div>
-        </a>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Health Check - Main Action Button */}
+          <a href="/elder/checkin" className={`block w-full rounded-2xl p-6 text-left transition-all transform hover:-translate-y-1 shadow-sm border flex flex-col justify-between h-full ${
+            healthCheckDone 
+              ? 'bg-emerald-50 border-emerald-200 hover:shadow-emerald-100' 
+              : 'bg-blue-600 border-blue-700 text-white hover:bg-blue-700 hover:shadow-blue-200'
+          }`}>
+            <div className="flex justify-between items-start mb-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${healthCheckDone ? 'bg-emerald-100' : 'bg-blue-500'}`}>
+                🩺
+              </div>
+            </div>
+            <div>
+              <h2 className={`text-xl font-bold ${healthCheckDone ? 'text-emerald-800' : 'text-white'}`}>Health Check</h2>
+              <p className={`text-sm font-medium mt-1 ${healthCheckDone ? 'text-emerald-600' : 'text-blue-100'}`}>
+                {healthCheckDone ? '✅ Completed today' : 'Tap here to record vitals'}
+              </p>
+            </div>
+          </a>
+
+          {/* Medicines */}
+          <a href="/elder/medications" className="block w-full bg-white rounded-2xl p-6 text-left shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 flex flex-col justify-between border border-slate-200 h-full">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-2xl">
+                💊
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Medicines</h2>
+              <p className="text-sm font-medium text-slate-500 mt-1">
+                {totalMeds > 0 ? `${takenMeds} out of ${totalMeds} taken` : 'No medicines today'}
+              </p>
+            </div>
+          </a>
+
+          {/* Tasks */}
+          <a href="/elder/tasks" className="block w-full bg-white rounded-2xl p-6 text-left shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 flex flex-col justify-between border border-slate-200 h-full">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-2xl">
+                📋
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Daily Tasks</h2>
+              <p className="text-sm font-medium text-slate-500 mt-1">Check your family messages</p>
+            </div>
+          </a>
+
+          {/* Games */}
+          <a href="/elder/games" className="block w-full bg-white rounded-2xl p-6 text-left shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 flex flex-col justify-between border border-slate-200 h-full">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center text-2xl">
+                🧩
+              </div>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Brain Games</h2>
+              <p className="text-sm font-medium text-slate-500 mt-1">Keep your mind sharp</p>
+            </div>
+          </a>
+        </div>
 
         {/* Historical Health Trends */}
-        <div className="w-full bg-white rounded-[2.5rem] p-6 shadow-lg shadow-gray-200/50 border-4 border-gray-100 mt-4">
-          <h2 className="text-2xl font-black mb-4">My Health Trends</h2>
+        <div className="w-full bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mt-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">My Health Trends</h2>
           <HealthCharts measurements={allMeasurements} variant="elder" />
         </div>
 
-        {/* Medicines */}
-        <a href="/elder/medications" className="block w-full bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-950 rounded-[2.5rem] p-8 text-left shadow-lg shadow-emerald-900/5 transition-all transform active:scale-95 flex items-center justify-between border-4 border-emerald-200">
-          <div>
-            <h2 className="text-3xl font-black">Medicines</h2>
-            <p className="text-xl font-bold opacity-80 mt-2">
-              {totalMeds > 0 ? `${takenMeds} out of ${totalMeds} taken` : 'No medicines today'}
-            </p>
-          </div>
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-3xl">
-            💊
-          </div>
-        </a>
-
-        {/* Tasks */}
-        <a href="/elder/tasks" className="block w-full bg-gradient-to-br from-purple-100 to-fuchsia-100 text-purple-950 rounded-[2.5rem] p-8 text-left shadow-lg shadow-purple-900/5 transition-all transform active:scale-95 flex items-center justify-between border-4 border-purple-200">
-          <div>
-            <h2 className="text-3xl font-black">Daily Tasks</h2>
-            <p className="text-xl font-bold opacity-80 mt-2">Check your family messages</p>
-          </div>
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-3xl">
-            📝
-          </div>
-        </a>
-
-        {/* Games */}
-        <a href="/elder/games" className="block w-full bg-gradient-to-br from-yellow-100 to-amber-100 text-amber-950 rounded-[2.5rem] p-8 text-left shadow-lg shadow-yellow-900/5 transition-all transform active:scale-95 flex items-center justify-between border-4 border-yellow-300">
-          <div>
-            <h2 className="text-3xl font-black">Brain Games</h2>
-            <p className="text-xl font-bold opacity-80 mt-2">Keep your mind sharp</p>
-          </div>
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-3xl">
-            🧠
-          </div>
-        </a>
-
-        <div className="pt-4">
+        <div className="pt-2">
           <TestAlarmButton />
         </div>
 
-      </div>
-
-      {/* Massive SOS Button */}
-      <div className="w-full max-w-md px-6 mt-8">
-        <a href="/elder/sos" className="block w-full bg-gradient-to-b from-red-500 to-red-700 text-white rounded-[2.5rem] p-8 shadow-2xl shadow-red-900/40 transition-all transform active:scale-95 text-center border-4 border-red-800 relative overflow-hidden">
-          <div className="absolute inset-0 bg-red-400 opacity-20 animate-pulse"></div>
-          <h2 className="font-black text-4xl relative z-10 tracking-widest text-shadow-sm">🚨 SOS 🚨</h2>
-          <p className="text-xl font-bold text-red-100 mt-2 relative z-10">Emergency Help</p>
-        </a>
+        {/* SOS Button - Still prominent but cleaner */}
+        <div className="w-full mt-6">
+          <a href="/elder/sos" className="block w-full bg-red-600 text-white rounded-2xl p-6 shadow-sm hover:shadow-md hover:bg-red-700 transition-all text-center border border-red-700 relative overflow-hidden flex items-center justify-center gap-3">
+            <span className="text-2xl">🚨</span>
+            <span className="font-bold text-2xl tracking-wide">SOS Emergency Help</span>
+            <span className="text-2xl">🚨</span>
+          </a>
+        </div>
       </div>
     </div>
   )

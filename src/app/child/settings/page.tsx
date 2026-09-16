@@ -1,7 +1,9 @@
 import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { EditProfileForm } from "./EditProfileForm"
 import { PushNotificationSettings } from "./PushNotificationSettings"
+import { HealthParameterSettings } from "./HealthParameterSettings"
 
 export default async function ChildSettings() {
   const session = await auth()
@@ -9,6 +11,11 @@ export default async function ChildSettings() {
   if (!session || session.user.role !== "CHILD") {
     redirect("/login")
   }
+
+  const relationship = await prisma.caregiverRelationship.findFirst({
+    where: { childId: session.user.id, status: "ACTIVE" },
+    include: { elder: { include: { elderProfile: true } } }
+  })
 
   return (
     <div className="space-y-6">
@@ -25,6 +32,13 @@ export default async function ChildSettings() {
           initialEmail={session.user.email || ""} 
         />
         <PushNotificationSettings />
+        {relationship && relationship.elder.elderProfile && (
+          <HealthParameterSettings 
+            elderId={relationship.elderId}
+            elderName={relationship.elder.name || "Elder"}
+            initialVitals={relationship.elder.elderProfile.requiredVitals}
+          />
+        )}
       </div>
     </div>
   )

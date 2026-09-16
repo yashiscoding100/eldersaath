@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 const SYMPTOM_OPTIONS = [
@@ -18,6 +18,7 @@ const SYMPTOM_OPTIONS = [
 export default function DailyCheckin() {
   const router = useRouter()
   const [step, setStep] = useState(1)
+  const [requiredVitals, setRequiredVitals] = useState<string[]>(["BP", "SUGAR", "SPO2", "PULSE", "TEMP", "WEIGHT"])
   const [data, setData] = useState({
     feeling: "",
     sleep: "",
@@ -32,6 +33,17 @@ export default function DailyCheckin() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    fetch("/api/elder/preferences")
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.requiredVitals) {
+          setRequiredVitals(resData.requiredVitals.split(","))
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const totalSteps = 6
   const handleNext = () => setStep((s) => Math.min(s + 1, totalSteps))
@@ -159,76 +171,91 @@ export default function DailyCheckin() {
             <p className="text-center text-gray-500">Enter manually or tap the camera to scan your monitor.</p>
             
             <div className="space-y-4 mt-6">
-              <div>
-                <div className="flex justify-between items-end mb-1">
-                  <label className="block text-lg font-semibold text-gray-700">Blood Pressure</label>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    capture="environment" 
-                    className="hidden" 
-                    id="ocr-upload"
-                    onChange={async (e) => {
-                      if (!e.target.files || e.target.files.length === 0) return;
-                      const file = e.target.files[0];
-                      const originalBp = data.bp;
-                      setData({ ...data, bp: "Scanning image..." });
-                      
-                      try {
-                        const reader = new FileReader();
-                        reader.onloadend = async () => {
-                          const base64data = reader.result;
-                          const res = await fetch("/api/ocr", { 
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ imageBase64: base64data })
-                          });
-                          const result = await res.json();
-                          if (result.extractedData?.bp) {
-                            setData(prev => ({ 
-                                ...prev, 
-                                bp: result.extractedData.bp,
-                                pulse: result.extractedData.pulse || prev.pulse 
-                            }));
-                          } else {
-                            setData({ ...data, bp: originalBp });
-                          }
-                        };
-                        reader.readAsDataURL(file);
-                      } catch {
-                        setData({ ...data, bp: originalBp });
-                      }
-                    }}
-                  />
-                  <label htmlFor="ocr-upload" className="text-blue-600 bg-blue-50 px-3 py-1 rounded-lg font-bold text-sm cursor-pointer flex items-center gap-1 hover:bg-blue-100 transition">
-                    📷 Scan
-                  </label>
+              {requiredVitals.includes("BP") && (
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-lg font-semibold text-gray-700">Blood Pressure</label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      capture="environment" 
+                      className="hidden" 
+                      id="ocr-upload"
+                      onChange={async (e) => {
+                        if (!e.target.files || e.target.files.length === 0) return;
+                        const file = e.target.files[0];
+                        const originalBp = data.bp;
+                        setData({ ...data, bp: "Scanning image..." });
+                        
+                        try {
+                          const reader = new FileReader();
+                          reader.onloadend = async () => {
+                            const base64data = reader.result;
+                            const res = await fetch("/api/ocr", { 
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ imageBase64: base64data })
+                            });
+                            const result = await res.json();
+                            if (result.extractedData?.bp) {
+                              setData(prev => ({ 
+                                  ...prev, 
+                                  bp: result.extractedData.bp,
+                                  pulse: result.extractedData.pulse || prev.pulse 
+                              }));
+                            } else {
+                              setData({ ...data, bp: originalBp });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        } catch {
+                          setData({ ...data, bp: originalBp });
+                        }
+                      }}
+                    />
+                    <label htmlFor="ocr-upload" className="text-blue-600 bg-blue-50 px-3 py-1 rounded-lg font-bold text-sm cursor-pointer flex items-center gap-1 hover:bg-blue-100 transition">
+                      📸 Scan
+                    </label>
+                  </div>
+                  <input type="text" placeholder="e.g. 138/86" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.bp} onChange={(e) => setData({ ...data, bp: e.target.value })} />
                 </div>
-                <input type="text" placeholder="e.g. 138/86" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.bp} onChange={(e) => setData({ ...data, bp: e.target.value })} />
-              </div>
-              <div>
-                <label className="block text-lg font-semibold text-gray-700 mb-1">Blood Sugar (mg/dL)</label>
-                <input type="text" placeholder="e.g. 112" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.sugar} onChange={(e) => setData({ ...data, sugar: e.target.value })} />
-              </div>
+              )}
+              
+              {requiredVitals.includes("SUGAR") && (
+                <div>
+                  <label className="block text-lg font-semibold text-gray-700 mb-1">Blood Sugar (mg/dL)</label>
+                  <input type="text" placeholder="e.g. 112" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.sugar} onChange={(e) => setData({ ...data, sugar: e.target.value })} />
+                </div>
+              )}
+              
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">SpO2 (%)</label>
-                  <input type="text" placeholder="e.g. 97" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.spo2} onChange={(e) => setData({ ...data, spo2: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">Pulse (BPM)</label>
-                  <input type="text" placeholder="e.g. 78" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.pulse} onChange={(e) => setData({ ...data, pulse: e.target.value })} />
-                </div>
+                {requiredVitals.includes("SPO2") && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">SpO2 (%)</label>
+                    <input type="text" placeholder="e.g. 97" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.spo2} onChange={(e) => setData({ ...data, spo2: e.target.value })} />
+                  </div>
+                )}
+                {requiredVitals.includes("PULSE") && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">Pulse (BPM)</label>
+                    <input type="text" placeholder="e.g. 78" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.pulse} onChange={(e) => setData({ ...data, pulse: e.target.value })} />
+                  </div>
+                )}
               </div>
+              
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">Temp (°F)</label>
-                  <input type="text" placeholder="e.g. 98.6" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.temperature} onChange={(e) => setData({ ...data, temperature: e.target.value })} />
-                </div>
-                <div>
-                  <label className="block text-lg font-semibold text-gray-700 mb-1">Weight (kg)</label>
-                  <input type="text" placeholder="e.g. 72" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.weight} onChange={(e) => setData({ ...data, weight: e.target.value })} />
-                </div>
+                {requiredVitals.includes("TEMP") && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">Temp (°F)</label>
+                    <input type="text" placeholder="e.g. 98.6" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.temperature} onChange={(e) => setData({ ...data, temperature: e.target.value })} />
+                  </div>
+                )}
+                {requiredVitals.includes("WEIGHT") && (
+                  <div>
+                    <label className="block text-lg font-semibold text-gray-700 mb-1">Weight (kg)</label>
+                    <input type="text" placeholder="e.g. 72" className="text-gray-900 font-bold w-full text-xl p-4 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 outline-none" value={data.weight} onChange={(e) => setData({ ...data, weight: e.target.value })} />
+                  </div>
+                )}
               </div>
             </div>
           </div>

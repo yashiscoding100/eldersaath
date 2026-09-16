@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/LogoutButton"
 import { TestAlarmButton } from "./TestAlarmButton"
 import { PendingConnections } from "./PendingConnections"
 import { GlobalNotice } from "@/components/GlobalNotice"
+import { HealthCharts } from "@/components/HealthCharts"
 
 export default async function ElderHome() {
   const session = await auth()
@@ -17,9 +18,14 @@ export default async function ElderHome() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const todayMeasurements = await prisma.healthMeasurement.findMany({
-    where: { elderId: session.user.id, timestamp: { gte: today } },
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(today.getDate() - 30)
+
+  const allMeasurements = await prisma.healthMeasurement.findMany({
+    where: { elderId: session.user.id, timestamp: { gte: thirtyDaysAgo } },
   })
+  
+  const todayMeasurements = allMeasurements.filter(m => m.timestamp >= today)
 
   const medications = await prisma.medication.findMany({
     where: { elderId: session.user.id },
@@ -72,6 +78,12 @@ export default async function ElderHome() {
             ❤️
           </div>
         </a>
+
+        {/* Historical Health Trends */}
+        <div className="w-full bg-white rounded-[2.5rem] p-6 shadow-lg shadow-gray-200/50 border-4 border-gray-100 mt-4">
+          <h2 className="text-2xl font-black mb-4">My Health Trends</h2>
+          <HealthCharts measurements={allMeasurements} variant="elder" />
+        </div>
 
         {/* Medicines */}
         <a href="/elder/medications" className="block w-full bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-950 rounded-[2.5rem] p-8 text-left shadow-lg shadow-emerald-900/5 transition-all transform active:scale-95 flex items-center justify-between border-4 border-emerald-200">

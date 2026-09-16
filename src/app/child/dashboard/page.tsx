@@ -4,6 +4,9 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { GlobalNotice } from "@/components/GlobalNotice"
+import { HealthCharts } from "@/components/HealthCharts"
+import { AiInsights } from "@/components/AiInsights"
+import { AcknowledgeEmergencyButton } from "@/components/AcknowledgeEmergencyButton"
 
 export default async function ChildDashboard() {
   const session = await auth()
@@ -23,10 +26,15 @@ export default async function ChildDashboard() {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      const latestMeasurements = await prisma.healthMeasurement.findMany({
-        where: { elderId: rel.elderId, timestamp: { gte: today } },
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(today.getDate() - 30)
+
+      const allMeasurements = await prisma.healthMeasurement.findMany({
+        where: { elderId: rel.elderId, timestamp: { gte: thirtyDaysAgo } },
         orderBy: { timestamp: 'desc' },
       })
+      
+      const latestMeasurements = allMeasurements.filter(m => m.timestamp >= today)
 
       const medications = await prisma.medication.findMany({
         where: { elderId: rel.elderId },
@@ -54,6 +62,7 @@ export default async function ChildDashboard() {
 
       return {
         relationship: rel,
+        allMeasurements,
         bp: bp?.value || "—",
         sugar: sugar?.value || "—",
         spo2: spo2?.value || "—",
@@ -95,7 +104,7 @@ export default async function ChildDashboard() {
           </div>
         ) : (
           <div className="grid gap-8">
-            {elderData.map(({ relationship: rel, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
+            {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
               <div key={rel.id} className="bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/40 ring-1 ring-gray-900/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300">
                 
                 {/* Profile Header */}
@@ -145,15 +154,18 @@ export default async function ChildDashboard() {
                             </p>
                           </div>
                         </div>
-                        {emergency.latitude && emergency.longitude && (
-                          <a 
-                            href={`https://www.google.com/maps/search/?api=1&query=${emergency.latitude},${emergency.longitude}`}
-                            target="_blank"
-                            className="bg-white text-red-600 font-bold py-3 px-6 rounded-xl hover:bg-red-50 transition whitespace-nowrap"
-                          >
-                            Open Maps
-                          </a>
-                        )}
+                          <div className="flex flex-col md:flex-row gap-3">
+                            <AcknowledgeEmergencyButton emergencyId={emergency.id} />
+                            {emergency.latitude && emergency.longitude && (
+                              <a 
+                                href={`https://www.google.com/maps/search/?api=1&query=${emergency.latitude},${emergency.longitude}`}
+                                target="_blank"
+                                className="bg-white text-red-600 font-bold py-3 px-6 rounded-xl hover:bg-red-50 transition whitespace-nowrap text-center"
+                              >
+                                Open Maps
+                              </a>
+                            )}
+                          </div>
                       </div>
                     )}
 
@@ -214,6 +226,12 @@ export default async function ChildDashboard() {
                           {weight}{weight !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">kg</span> : ""}
                         </p>
                       </div>
+                    </div>
+
+                    {/* Health Trends Graphs */}
+                    <div className="mt-8 mb-6 space-y-4">
+                      <AiInsights elderId={rel.elderId} />
+                      <HealthCharts measurements={allMeasurements} variant="child" />
                     </div>
 
                     {/* Medicines & Deep Links */}

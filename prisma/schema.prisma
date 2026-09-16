@@ -56,6 +56,21 @@ model ElderProfile {
   medicalConditions String?
   preferredHospital String?
   notes             String?
+  
+  emergencyContacts EmergencyContact[]
+}
+
+model EmergencyContact {
+  id        String   @id @default(cuid())
+  elderId   String
+  elder     ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  
+  name      String
+  phone     String
+  relation  String
+  priority  Int      @default(1)
+  
+  createdAt DateTime @default(now())
 }
 
 model CaregiverRelationship {
@@ -63,6 +78,7 @@ model CaregiverRelationship {
   elderId   String
   childId   String
   status    String   @default("PENDING") // "PENDING", "ACTIVE"
+  priority  Int      @default(1) // 1 = Primary, 2 = Secondary
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -140,15 +156,18 @@ model TaskLog {
 }
 
 model EmergencyEvent {
-  id          String   @id @default(cuid())
-  elderId     String
-  elder       User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
+  id              String   @id @default(cuid())
+  elderId         String
+  elder           User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
   
-  latitude    Float?
-  longitude   Float?
-  status      String   @default("ACTIVE") // "ACTIVE", "RESOLVED"
-  resolvedAt  DateTime?
-  timestamp   DateTime @default(now())
+  latitude        Float?
+  longitude       Float?
+  status          String   @default("ACTIVE") // "ACTIVE", "ACKNOWLEDGED", "RESOLVED"
+  escalationLevel Int      @default(1) // 1 = Primary, 2 = Secondary, 3 = Contacts
+  acknowledgedBy  String?
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  timestamp       DateTime @default(now())
 }
 
 model MedicalDocument {
@@ -199,12 +218,12 @@ model Account {
   type               String
   provider           String
   providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
+  refresh_token      String?  @db.Text  
+  access_token       String?  @db.Text  
   expires_at         Int?
   token_type         String?
   scope              String?
-  id_token           String?  @db.Text
+  id_token           String?  @db.Text  
   session_state      String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -219,3 +238,5 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+

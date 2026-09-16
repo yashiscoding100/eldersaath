@@ -16,11 +16,21 @@ export async function POST(req: Request) {
       data: {
         elderId: session.user.id,
         latitude,
-        longitude
+        longitude,
+        escalationLevel: 1 // Start at primary caregiver
       }
     })
     
-    // In a real app, this would trigger Twilio SMS, push notifications, etc.
+    // Feature 5: Emergency Escalation - Fetch Primary Caregivers
+    const primaryCaregivers = await prisma.caregiverRelationship.findMany({
+      where: { elderId: session.user.id, priority: 1, status: "ACTIVE" },
+      include: { child: true }
+    })
+
+    const phoneNumbers = primaryCaregivers.map(rel => rel.child.email) // Fallback to email as ID
+    
+    // MOCK SMS PROVIDER: In production this would be Twilio
+    console.log(`[EMERGENCY ESCALATION LEVEL 1]: Contacting Primary Caregivers: ${phoneNumbers.join(', ')}`)
     console.log(`EMERGENCY: Elder ${session.user.name} triggered SOS at lat: ${latitude}, lng: ${longitude}`)
     
     return NextResponse.json({ message: "Emergency contacts alerted" }, { status: 200 })

@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { EditProfileForm } from "./EditProfileForm"
+import { PushNotificationSettings } from "./PushNotificationSettings"
 
 export default async function ChildSettings() {
   const session = await auth()
@@ -23,15 +24,7 @@ export default async function ChildSettings() {
           initialName={session.user.name || ""} 
           initialEmail={session.user.email || ""} 
         />
-        <div className="p-6 flex items-center justify-between">
-          <div>
-            <h4 className="font-bold text-slate-900">Push Notifications</h4>
-            <p className="text-sm text-slate-500 mt-1">Receive alerts for SOS and medication reminders.</p>
-          </div>
-          <button className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-md font-semibold text-slate-700 text-sm hover:bg-slate-100 transition">
-            Configure
-          </button>
-        </div>
+        <PushNotificationSettings />
       </div>
     </div>
   )

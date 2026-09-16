@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { EditUserModal } from "./EditUserModal"
 
 type User = {
   id: string
@@ -81,9 +82,10 @@ export function UserRow({ user }: { user: User }) {
         </span>
       </td>
       <td className="p-4 text-slate-500 text-sm">{new Date(user.createdAt).toLocaleDateString()}</td>
-      <td className="p-4 text-right flex justify-end gap-2">
+      <td className="p-4 text-right flex justify-end gap-2 items-center">
         {user.role !== "ADMIN" && (
           <>
+            <EditUserModal user={user} />
             <button 
               onClick={handleBlockToggle}
               disabled={loading}
@@ -106,3 +108,4 @@ export function UserRow({ user }: { user: User }) {
     </tr>
   )
 }
+

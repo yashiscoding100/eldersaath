@@ -40,7 +40,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
-    const { id, isBlocked, blockMessage } = await req.json()
+    const { id, isBlocked, blockMessage, name, role } = await req.json()
 
     if (!id) {
       return NextResponse.json({ message: "User ID is required" }, { status: 400 })
@@ -50,14 +50,22 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: "Cannot block yourself" }, { status: 400 })
     }
 
+    const updateData: any = {}
+    if (isBlocked !== undefined) {
+      updateData.isBlocked = isBlocked
+      updateData.blockMessage = isBlocked ? blockMessage : null
+    }
+    if (name !== undefined) updateData.name = name
+    if (role !== undefined) updateData.role = role
+
     await prisma.user.update({
       where: { id },
-      data: { isBlocked, blockMessage: isBlocked ? blockMessage : null }
+      data: updateData
     })
 
-    return NextResponse.json({ message: "User block status updated" }, { status: 200 })
+    return NextResponse.json({ message: "User updated successfully" }, { status: 200 })
   } catch (error) {
-    return NextResponse.json({ message: "Failed to update block status" }, { status: 500 })
+    return NextResponse.json({ message: "Failed to update user" }, { status: 500 })
   }
 }
 

@@ -19,6 +19,8 @@ import {
   Search
 } from "lucide-react"
 
+import { signOut } from "next-auth/react"
+
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/child/dashboard", icon: LayoutDashboard },
   { name: "Health Analytics", href: "/child/health", icon: Activity },
@@ -31,7 +33,7 @@ const NAV_ITEMS = [
   { name: "Settings", href: "/child/settings", icon: Settings },
 ]
 
-export function ChildLayoutShell({ children, elderName = "Mom" }: { children: React.ReactNode, elderName?: string }) {
+export function ChildLayoutShell({ children, elderName = "Mom", userName = "Family Member" }: { children: React.ReactNode, elderName?: string, userName?: string }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -48,7 +50,9 @@ export function ChildLayoutShell({ children, elderName = "Mom" }: { children: Re
         </div>
         <div className="flex items-center gap-3">
           <Bell className="w-5 h-5 text-slate-500" />
-          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">F</div>
+          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
+            {userName.charAt(0).toUpperCase()}
+          </div>
         </div>
       </div>
 
@@ -98,10 +102,17 @@ export function ChildLayoutShell({ children, elderName = "Mom" }: { children: Re
 
         <div className="p-4 border-t border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">Y</div>
-            <div className="overflow-hidden">
-              <p className="text-sm font-bold text-slate-900 truncate">Family Member</p>
-              <p className="text-xs text-slate-500 truncate">Settings</p>
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700 shrink-0">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <div className="overflow-hidden flex-1">
+              <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
+              <button 
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="text-xs font-semibold text-red-500 hover:text-red-700 transition truncate mt-0.5"
+              >
+                Sign out
+              </button>
             </div>
           </div>
         </div>

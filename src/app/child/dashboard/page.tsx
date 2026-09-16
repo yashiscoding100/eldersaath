@@ -94,6 +94,11 @@ export default async function ChildDashboard() {
           </h1>
           <p className="text-sm text-slate-500 mt-1">Here is the latest health overview for your care recipients.</p>
         </div>
+        {relationships.length > 0 && (
+          <div className="hidden md:block">
+            <LinkParentButton variant="small" />
+          </div>
+        )}
       </div>
 
       {relationships.length === 0 ? (

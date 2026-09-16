@@ -18,7 +18,10 @@ export default async function ChildLayout({ children }: { children: React.ReactN
   const elderName = relationships.length > 0 ? relationships[0].elder.name || "Elder" : "No Elder Connected"
 
   return (
-    <ChildLayoutShell elderName={elderName}>
+    <ChildLayoutShell 
+      elderName={elderName} 
+      userName={session.user.name || "Family Member"}
+    >
       {children}
     </ChildLayoutShell>
   )

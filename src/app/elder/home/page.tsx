@@ -99,16 +99,16 @@ export default async function ElderHome() {
             </div>
           </a>
 
-          {/* Tasks */}
+          {/* Wellbeing */}
           <a href="/elder/tasks" className="block w-full bg-white rounded-2xl p-6 text-left shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 flex flex-col justify-between border border-slate-200 h-full">
             <div className="flex justify-between items-start mb-4">
               <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center text-2xl">
-                📋
+                🌸
               </div>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Daily Tasks</h2>
-              <p className="text-sm font-medium text-slate-500 mt-1">Check your family messages</p>
+              <h2 className="text-xl font-bold text-slate-900">Your Wellbeing</h2>
+              <p className="text-sm font-medium text-slate-500 mt-1">Gentle reminders & care notes</p>
             </div>
           </a>
 

@@ -25,14 +25,14 @@ export default async function ElderTasks() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm mb-6 text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900">Today's Tasks</h1>
-        <p className="text-gray-500 mt-2">Assigned by your family</p>
+        <h1 className="text-3xl font-extrabold text-gray-900">Your Wellbeing</h1>
+        <p className="text-gray-500 mt-2">Gentle reminders & care notes for you 🌸</p>
       </div>
 
       <div className="w-full max-w-md space-y-4 flex-1">
         {tasks.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl text-center shadow-sm">
-             <p className="text-xl text-gray-600">No tasks assigned for today.</p>
+             <p className="text-xl text-gray-600">No specific notes for today. Have a wonderful day!</p>
           </div>
         ) : (
           tasks.map(task => {

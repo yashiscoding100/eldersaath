@@ -1,5 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+
+export const dynamic = 'force-dynamic'
 import { redirect } from "next/navigation"
 import { AcknowledgeEmergencyButton } from "@/components/AcknowledgeEmergencyButton"
 import { 

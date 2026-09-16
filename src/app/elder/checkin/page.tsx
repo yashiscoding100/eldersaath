@@ -4,12 +4,15 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 const SYMPTOM_OPTIONS = [
-  "Chest discomfort",
+  "Chest pressure/pain",
+  "Numbness in face/arm",
   "Breathlessness",
-  "Dizziness",
+  "Dizziness/Fainting",
   "Weakness",
+  "Sudden confusion",
+  "Pain in jaw/back",
+  "Cold sweats",
   "Headache",
-  "Confusion",
   "Fever",
   "Nausea",
   "None"
@@ -265,7 +268,7 @@ export default function DailyCheckin() {
         {step === 5 && (
           <div className="space-y-6 text-center">
             <h1 className="text-3xl font-bold text-gray-800">Any symptoms today?</h1>
-            <p className="text-gray-500">Select all that apply.</p>
+            <p className="text-gray-500">Checking for these helps your family spot early warning signs of illness, heart issues, or stroke.</p>
             <div className="grid grid-cols-2 gap-3 mt-6">
               {SYMPTOM_OPTIONS.map((symptom) => (
                 <button

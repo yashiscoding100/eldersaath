@@ -34,7 +34,19 @@ const NAV_ITEMS = [
   { name: "Settings", href: "/child/settings", icon: Settings },
 ]
 
-export function ChildLayoutShell({ children, elderName = "Mom", userName = "Family Member" }: { children: React.ReactNode, elderName?: string, userName?: string }) {
+export function ChildLayoutShell({ 
+  children, 
+  elderName = "Mom", 
+  userName = "Family Member",
+  parentCount = 0,
+  hasEmergency = false 
+}: { 
+  children: React.ReactNode, 
+  elderName?: string, 
+  userName?: string,
+  parentCount?: number,
+  hasEmergency?: boolean
+}) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -96,7 +108,10 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
           <span className="font-bold text-lg tracking-tight">ElderSaath</span>
         </div>
         <div className="flex items-center gap-3">
-          <Bell className="w-5 h-5 text-slate-500" />
+          <div className="relative">
+            <Bell className="w-5 h-5 text-slate-500" />
+            {hasEmergency && <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
+          </div>
           <AvatarDropdown />
         </div>
       </div>
@@ -169,7 +184,14 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
         <header className="hidden md:flex h-16 bg-white border-b border-slate-200 items-center justify-between px-8 sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Care Recipient</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                Care Recipient
+                {parentCount > 0 && (
+                  <span className="bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                    {parentCount} Linked
+                  </span>
+                )}
+              </span>
               <button className="flex items-center gap-1 font-bold text-slate-900 hover:text-blue-600 transition-colors">
                 {elderName} <span className="text-[10px]">▼</span>
               </button>
@@ -187,7 +209,7 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
             </div>
             <button className="relative text-slate-500 hover:text-slate-700 transition-colors">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+              {hasEmergency && <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
             </button>
             <div className="h-6 w-px bg-slate-200 mx-1"></div>
             <AvatarDropdown />

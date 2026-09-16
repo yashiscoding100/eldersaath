@@ -87,17 +87,15 @@ export default async function ChildDashboard() {
         <GlobalNotice />
 
         {relationships.length === 0 ? (
-          <div className="bg-white/50 backdrop-blur-xl p-16 text-center rounded-[2.5rem] shadow-sm ring-1 ring-gray-900/5">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="text-3xl">👨‍👩‍👧‍👦</span>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">No family members linked</h2>
+          <div className="text-center py-24 bg-white/50 backdrop-blur-xl rounded-[3rem] ring-1 ring-gray-900/5 shadow-sm">
+            <div className="text-6xl mb-6">🤝</div>
+            <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">Build Your Care Network</h3>
             <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">Connect with your elderly parents to monitor their real-time health data, medications, and tasks securely.</p>
             <LinkParentButton variant="large" />
           </div>
         ) : (
           <div className="grid gap-8">
-            {elderData.map(({ relationship: rel, bp, sugar, spo2, pulse, totalMeds, takenMeds, healthCheckDone }) => (
+            {elderData.map(({ relationship: rel, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
               <div key={rel.id} className="bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/40 ring-1 ring-gray-900/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300">
                 
                 {/* Profile Header */}

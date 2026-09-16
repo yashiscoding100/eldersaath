@@ -3,6 +3,8 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
+export const dynamic = 'force-dynamic'
+
 export async function DELETE(req: Request) {
   const session = await auth()
   
@@ -65,7 +67,8 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ message: "User updated successfully" }, { status: 200 })
   } catch (error) {
-    return NextResponse.json({ message: "Failed to update user" }, { status: 500 })
+    console.error("PATCH error:", error)
+    return NextResponse.json({ message: "Failed to update user", error: String(error) }, { status: 500 })
   }
 }
 

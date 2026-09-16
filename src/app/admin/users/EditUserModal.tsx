@@ -38,10 +38,11 @@ export function EditUserModal({ user }: { user: User }) {
         setIsOpen(false)
         router.refresh()
       } else {
-        alert("Failed to update user")
+        const errData = await res.json().catch(() => ({}))
+        alert(`Failed to update user: ${errData.message || res.statusText}`)
       }
     } catch (e) {
-      alert("Error updating user")
+      alert("Error updating user: " + String(e))
     } finally {
       setLoading(false)
     }

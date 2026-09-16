@@ -56,10 +56,11 @@ export function UserRow({ user }: { user: User }) {
       if (res.ok) {
         router.refresh()
       } else {
-        alert("Failed to update block status")
+        const errData = await res.json().catch(() => ({}))
+        alert(`Failed to update block status: ${errData.message || res.statusText}`)
       }
     } catch (e) {
-      alert("Error updating user")
+      alert("Error updating user: " + String(e))
     } finally {
       setLoading(false)
     }

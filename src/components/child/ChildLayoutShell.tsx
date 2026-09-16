@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { 
@@ -16,7 +16,8 @@ import {
   Menu,
   X,
   Bell,
-  Search
+  Search,
+  LogOut
 } from "lucide-react"
 
 import { signOut } from "next-auth/react"
@@ -36,6 +37,52 @@ const NAV_ITEMS = [
 export function ChildLayoutShell({ children, elderName = "Mom", userName = "Family Member" }: { children: React.ReactNode, elderName?: string, userName?: string }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const AvatarDropdown = () => (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-700 text-sm hover:ring-2 hover:ring-blue-500 hover:ring-offset-2 transition-all outline-none"
+      >
+        {userName.charAt(0).toUpperCase()}
+      </button>
+      
+      {dropdownOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 py-1 z-50 animate-fade-in">
+          <div className="px-4 py-2 border-b border-slate-100">
+            <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
+          </div>
+          <Link 
+            href="/child/settings"
+            onClick={() => setDropdownOpen(false)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
+          >
+            <Settings className="w-4 h-4" />
+            Account Settings
+          </Link>
+          <button 
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col md:flex-row font-sans text-slate-900">
@@ -50,9 +97,7 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
         </div>
         <div className="flex items-center gap-3">
           <Bell className="w-5 h-5 text-slate-500" />
-          <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 text-sm">
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          <AvatarDropdown />
         </div>
       </div>
 
@@ -109,9 +154,9 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
               <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
               <button 
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-xs font-semibold text-red-500 hover:text-red-700 transition truncate mt-0.5"
+                className="text-xs font-semibold text-slate-500 hover:text-red-600 transition truncate mt-0.5 flex items-center gap-1"
               >
-                Sign out
+                <LogOut className="w-3 h-3" /> Sign out
               </button>
             </div>
           </div>
@@ -144,6 +189,8 @@ export function ChildLayoutShell({ children, elderName = "Mom", userName = "Fami
               <Bell className="w-5 h-5" />
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
             </button>
+            <div className="h-6 w-px bg-slate-200 mx-1"></div>
+            <AvatarDropdown />
           </div>
         </header>
 

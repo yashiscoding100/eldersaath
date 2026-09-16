@@ -21,6 +21,11 @@ export default async function ElderHome() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(today.getDate() - 30)
 
+  const profile = await prisma.elderProfile.findUnique({
+    where: { userId: session.user.id }
+  })
+  const requiredVitals = profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
+
   const allMeasurements = await prisma.healthMeasurement.findMany({
     where: { elderId: session.user.id, timestamp: { gte: thirtyDaysAgo } },
   })
@@ -129,7 +134,11 @@ export default async function ElderHome() {
         {/* Historical Health Trends */}
         <div className="w-full bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mt-6">
           <h2 className="text-lg font-bold text-slate-900 mb-4">My Health Trends</h2>
-          <HealthCharts measurements={allMeasurements} variant="elder" />
+          <HealthCharts 
+            measurements={allMeasurements} 
+            variant="elder" 
+            requiredVitals={requiredVitals}
+          />
         </div>
 
         <div className="pt-2">

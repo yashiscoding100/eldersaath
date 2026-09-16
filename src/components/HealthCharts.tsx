@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -20,7 +20,15 @@ type Measurement = {
   timestamp: Date
 }
 
-export function HealthCharts({ measurements, variant = 'child' }: { measurements: Measurement[], variant?: 'elder' | 'child' }) {
+export function HealthCharts({ 
+  measurements, 
+  variant = 'child',
+  requiredVitals = "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
+}: { 
+  measurements: Measurement[], 
+  variant?: 'elder' | 'child',
+  requiredVitals?: string
+}) {
   const [activeTab, setActiveTab] = useState('BP')
   const [timeRange, setTimeRange] = useState(30)
 
@@ -50,7 +58,7 @@ export function HealthCharts({ measurements, variant = 'child' }: { measurements
     return filtered
   }, [measurements, activeTab, timeRange])
 
-  const tabs = [
+  const allTabs = [
     { id: 'BP', label: 'Blood Pressure' },
     { id: 'SUGAR', label: 'Blood Sugar' },
     { id: 'SPO2', label: 'SpO2' },
@@ -58,6 +66,15 @@ export function HealthCharts({ measurements, variant = 'child' }: { measurements
     { id: 'TEMP', label: 'Temperature' },
     { id: 'WEIGHT', label: 'Weight' }
   ]
+
+  const allowedVitals = requiredVitals.split(',')
+  const tabs = allTabs.filter(t => allowedVitals.includes(t.id))
+
+  useEffect(() => {
+    if (!allowedVitals.includes(activeTab) && tabs.length > 0) {
+      setActiveTab(tabs[0].id)
+    }
+  }, [allowedVitals, activeTab, tabs])
 
   const isElder = variant === 'elder'
 

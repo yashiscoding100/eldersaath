@@ -26,7 +26,7 @@ export default async function ChildDashboard() {
 
   const relationships = await prisma.caregiverRelationship.findMany({
     where: { childId: session.user.id },
-    include: { elder: true }
+    include: { elder: { include: { elderProfile: true } } }
   })
 
   const elderData = await Promise.all(
@@ -58,6 +58,12 @@ export default async function ChildDashboard() {
         orderBy: { timestamp: 'desc' }
       })
 
+      const recentActivity = await prisma.healthMeasurement.findMany({
+        where: { elderId: rel.elderId },
+        orderBy: { timestamp: 'desc' },
+        take: 5
+      })
+
       const totalMeds = medications.length
       const takenMeds = medications.filter(m => m.logs.some(l => l.status === "TAKEN")).length
 
@@ -71,16 +77,17 @@ export default async function ChildDashboard() {
       return {
         relationship: rel,
         allMeasurements,
-        bp: bp?.value || "—",
-        sugar: sugar?.value || "—",
-        spo2: spo2?.value || "—",
-        pulse: pulse?.value || "—",
-        temp: temp?.value || "—",
-        weight: weight?.value || "—",
+        bp: bp?.value || "--",
+        sugar: sugar?.value || "--",
+        spo2: spo2?.value || "--",
+        pulse: pulse?.value || "--",
+        temp: temp?.value || "--",
+        weight: weight?.value || "--",
         totalMeds,
         takenMeds,
         healthCheckDone: latestMeasurements.length > 0,
         emergency,
+        requiredVitals: rel.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
       }
     })
   )
@@ -116,7 +123,7 @@ export default async function ChildDashboard() {
         </div>
       ) : (
         <div className="space-y-8">
-          {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
+          {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency, requiredVitals }) => (
             <div key={rel.id} className="space-y-6">
               
               {/* Emergency Banner */}
@@ -268,7 +275,11 @@ export default async function ChildDashboard() {
                     </div>
                     
                     <div className="lg:col-span-2">
-                      <HealthCharts measurements={allMeasurements} variant="child" />
+                      <HealthCharts 
+                        measurements={allMeasurements} 
+                        variant="child" 
+                        requiredVitals={requiredVitals}
+                      />
                     </div>
                   </div>
 

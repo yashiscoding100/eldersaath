@@ -32,11 +32,11 @@ export default async function ChildSettings() {
           initialEmail={session.user.email || ""} 
         />
         <PushNotificationSettings />
-        {relationship && relationship.elder.elderProfile && (
+        {relationship && (
           <HealthParameterSettings 
             elderId={relationship.elderId}
             elderName={relationship.elder.name || "Elder"}
-            initialVitals={relationship.elder.elderProfile.requiredVitals}
+            initialVitals={relationship.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"}
           />
         )}
       </div>

@@ -37,6 +37,11 @@ export default async function ChildDashboard() {
         }
       })
 
+      const emergency = await prisma.emergencyEvent.findFirst({
+        where: { elderId: rel.elderId, status: "ACTIVE" },
+        orderBy: { timestamp: 'desc' }
+      })
+
       const totalMeds = medications.length
       const takenMeds = medications.filter(m => m.logs.some(l => l.status === "TAKEN")).length
 
@@ -44,6 +49,8 @@ export default async function ChildDashboard() {
       const sugar = latestMeasurements.find(m => m.type === "SUGAR")
       const spo2 = latestMeasurements.find(m => m.type === "SPO2")
       const pulse = latestMeasurements.find(m => m.type === "PULSE")
+      const temp = latestMeasurements.find(m => m.type === "TEMP")
+      const weight = latestMeasurements.find(m => m.type === "WEIGHT")
 
       return {
         relationship: rel,
@@ -51,9 +58,12 @@ export default async function ChildDashboard() {
         sugar: sugar?.value || "—",
         spo2: spo2?.value || "—",
         pulse: pulse?.value || "—",
+        temp: temp?.value || "—",
+        weight: weight?.value || "—",
         totalMeds,
         takenMeds,
         healthCheckDone: latestMeasurements.length > 0,
+        emergency,
       }
     })
   )
@@ -117,47 +127,93 @@ export default async function ChildDashboard() {
 
                 {rel.status === "PENDING" ? (
                   <div className="bg-gradient-to-br from-orange-50 to-amber-50/50 p-8 rounded-3xl text-center ring-1 ring-orange-900/5">
-                    <div className="text-4xl mb-4">📨</div>
+                    <div className="text-4xl mb-4">⏳</div>
                     <p className="text-orange-900 font-extrabold text-xl mb-2 tracking-tight">Request Sent Successfully</p>
                     <p className="text-orange-700 font-medium">Waiting for {rel.elder.name} to approve your secure connection request from their dashboard.</p>
                   </div>
                 ) : (
                   <>
+                    {emergency && (
+                      <div className="bg-red-600 text-white p-6 rounded-3xl shadow-xl mb-8 animate-pulse flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="text-5xl">🚨</div>
+                          <div>
+                            <h3 className="text-2xl font-black tracking-tight">SOS TRIGGERED!</h3>
+                            <p className="font-medium text-red-100 mt-1">
+                              {rel.elder.name} needs immediate assistance! 
+                              {emergency.latitude && emergency.longitude ? 
+                                ` Location: ${emergency.latitude.toFixed(4)}, ${emergency.longitude.toFixed(4)}` : 
+                                " Location unavailable."}
+                            </p>
+                          </div>
+                        </div>
+                        {emergency.latitude && emergency.longitude && (
+                          <a 
+                            href={`https://www.google.com/maps/search/?api=1&query=${emergency.latitude},${emergency.longitude}`}
+                            target="_blank"
+                            className="bg-white text-red-600 font-bold py-3 px-6 rounded-xl hover:bg-red-50 transition whitespace-nowrap"
+                          >
+                            Open Maps
+                          </a>
+                        )}
+                      </div>
+                    )}
+
                     {/* Health Stats Grid - Apple Health Style */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-red-500/20 transition-all">
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-red-500/20 transition-all col-span-2 md:col-span-1">
                         <div className="flex justify-between items-start mb-2">
                           <p className="text-sm font-semibold text-gray-500">Blood Pressure</p>
                           <span className="text-red-500 text-lg">❤️</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-3xl tracking-tight">{bp}</p>
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">{bp}</p>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-blue-500/20 transition-all">
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-blue-500/20 transition-all col-span-2 md:col-span-1">
                         <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Blood Sugar</p>
+                          <p className="text-sm font-semibold text-gray-500">Sugar</p>
                           <span className="text-blue-500 text-lg">🩸</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-3xl tracking-tight">{sugar}</p>
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">{sugar}</p>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-cyan-500/20 transition-all">
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-cyan-500/20 transition-all col-span-2 md:col-span-1">
                         <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Oxygen (SpO2)</p>
+                          <p className="text-sm font-semibold text-gray-500">SpO2</p>
                           <span className="text-cyan-500 text-lg">💨</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-3xl tracking-tight">
-                          {spo2}{spo2 !== "—" ? <span className="text-lg text-gray-400 font-medium ml-1">%</span> : ""}
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
+                          {spo2}{spo2 !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">%</span> : ""}
                         </p>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-rose-500/20 transition-all">
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-rose-500/20 transition-all col-span-2 md:col-span-1">
                         <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Heart Rate</p>
+                          <p className="text-sm font-semibold text-gray-500">Pulse</p>
                           <span className="text-rose-500 text-lg">💓</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-3xl tracking-tight">
-                          {pulse}{pulse !== "—" ? <span className="text-lg text-gray-400 font-medium ml-1">bpm</span> : ""}
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
+                          {pulse}{pulse !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">bpm</span> : ""}
+                        </p>
+                      </div>
+
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-orange-500/20 transition-all col-span-2 md:col-span-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="text-sm font-semibold text-gray-500">Temp</p>
+                          <span className="text-orange-500 text-lg">🌡️</span>
+                        </div>
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
+                          {temp}{temp !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">°F</span> : ""}
+                        </p>
+                      </div>
+
+                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-purple-500/20 transition-all col-span-2 md:col-span-1">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="text-sm font-semibold text-gray-500">Weight</p>
+                          <span className="text-purple-500 text-lg">⚖️</span>
+                        </div>
+                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
+                          {weight}{weight !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">kg</span> : ""}
                         </p>
                       </div>
                     </div>

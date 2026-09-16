@@ -29,49 +29,67 @@ export default async function ChildDocuments() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Medical Vault</h1>
-            <p className="text-gray-500 font-medium">Documents for {relationship.elder.name}</p>
-          </div>
-          <UploadDocumentForm elderId={relationship.elderId} />
-        </header>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {documents.length === 0 ? (
-            <div className="col-span-full p-12 text-center bg-white rounded-xl shadow-sm border border-gray-100">
-              <p className="text-gray-500 font-medium text-lg">No medical documents uploaded yet.</p>
-              <p className="text-gray-400 mt-2">Upload prescriptions, test results, or IDs for safekeeping.</p>
-            </div>
-          ) : (
-            documents.map(doc => (
-              <div key={doc.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center text-2xl">
-                      {doc.fileType.includes("pdf") ? "📄" : "🖼️"}
-                    </div>
-                    <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">
-                      {doc.uploadedAt.toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">{doc.title}</h3>
-                  <p className="text-sm text-gray-500 font-medium uppercase tracking-wide">{doc.fileType.split('/')[1] || doc.fileType}</p>
-                </div>
-                
-                <a 
-                  href={doc.fileUrl} 
-                  download={`${doc.title}.${doc.fileType.split('/')[1] || 'pdf'}`}
-                  className="mt-6 w-full block text-center bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold py-2 rounded-lg transition"
-                >
-                  Download / View
-                </a>
-              </div>
-            ))
-          )}
+    <div className="space-y-6">
+      <header className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Medical Vault</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage documents for {relationship.elder.name}</p>
         </div>
+        <div className="flex gap-4 items-center">
+          <UploadDocumentForm elderId={relationship.elderId} />
+        </div>
+      </header>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        {documents.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+              <span className="text-2xl">📄</span>
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">No documents found</h3>
+            <p className="text-slate-500 text-sm mt-1 max-w-sm">Upload prescriptions, lab reports, or medical records for safekeeping.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-xs">
+                <tr>
+                  <th className="p-4 px-6">Document Name</th>
+                  <th className="p-4 px-6">Type</th>
+                  <th className="p-4 px-6">Date Added</th>
+                  <th className="p-4 px-6 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {documents.map(doc => (
+                  <tr key={doc.id} className="hover:bg-slate-50 transition group">
+                    <td className="p-4 px-6 font-bold text-slate-900 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
+                        {doc.fileType.includes("pdf") ? "📄" : "🖼️"}
+                      </div>
+                      {doc.title}
+                    </td>
+                    <td className="p-4 px-6 text-slate-500 font-medium uppercase text-xs tracking-wider">
+                      {doc.fileType.split('/')[1] || doc.fileType}
+                    </td>
+                    <td className="p-4 px-6 text-slate-600 font-medium">
+                      {doc.uploadedAt.toLocaleDateString()}
+                    </td>
+                    <td className="p-4 px-6 text-right">
+                      <a 
+                        href={doc.fileUrl} 
+                        download={`${doc.title}.${doc.fileType.split('/')[1] || 'pdf'}`}
+                        className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block opacity-0 group-hover:opacity-100"
+                      >
+                        View
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )

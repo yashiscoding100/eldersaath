@@ -36,18 +36,18 @@ export function AiInsights({ elderId }: { elderId: string }) {
   if (!insight) return null
 
   return (
-    <div className="w-full bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl p-5 border border-indigo-100 shadow-sm relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-4 opacity-10 text-4xl">✨</div>
+    <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-indigo-100/50 shadow-sm relative overflow-hidden h-full">
+      <div className="absolute top-0 right-0 p-4 opacity-5 text-6xl transform translate-x-4 -translate-y-4">✨</div>
       <div className="flex gap-4 relative z-10">
         <div className="text-2xl mt-1">🤖</div>
         <div>
-          <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
-            AI Health Insight
-            <span className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Beta</span>
+          <h4 className="font-bold text-slate-900 mb-1 flex items-center gap-2">
+            AI Health Insights
+            <span className="text-[10px] bg-white border border-indigo-200 text-indigo-700 px-2 py-0.5 rounded-md uppercase tracking-wider font-bold">Beta</span>
           </h4>
-          <p className="text-indigo-800 text-sm leading-relaxed">{insight}</p>
-          <p className="text-[10px] text-indigo-400 mt-2 font-medium uppercase tracking-wider">
-            Disclaimer: This is a health-data trend, not a medical diagnosis.
+          <p className="text-slate-700 text-sm leading-relaxed mt-2">{insight}</p>
+          <p className="text-[10px] text-slate-400 mt-4 font-medium uppercase tracking-wider">
+            Disclaimer: AI-generated trend based on past 30 days. Not a medical diagnosis.
           </p>
         </div>
       </div>

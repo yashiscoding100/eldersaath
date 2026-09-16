@@ -30,42 +30,46 @@ export default async function ChildMedications() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Medicines for {relationship.elder.name}</h1>
-          </div>
-          <div className="flex gap-4 items-center">
-             <AddMedicineForm elderId={relationship.elderId} />
-             <a href="/child/dashboard" className="text-blue-600 font-bold hover:underline">← Back</a>
-          </div>
-        </header>
+    <div className="space-y-6">
+      <header className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Medications</h1>
+          <p className="text-sm text-slate-500 mt-1">Manage {relationship.elder.name}&apos;s daily prescriptions.</p>
+        </div>
+        <div className="flex gap-4 items-center">
+           <AddMedicineForm elderId={relationship.elderId} />
+        </div>
+      </header>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {medications.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-gray-500 font-medium">No medicines added yet.</p>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        {medications.length === 0 ? (
+          <div className="p-12 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+              <span className="text-2xl">💊</span>
             </div>
-          ) : (
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-100">
+            <h3 className="text-lg font-bold text-slate-900">No active medications</h3>
+            <p className="text-slate-500 text-sm mt-1 max-w-sm">Add a prescription to track adherence and send reminders to your care recipient.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm whitespace-nowrap">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-xs">
                 <tr>
-                  <th className="p-4 font-bold text-gray-700">Name</th>
-                  <th className="p-4 font-bold text-gray-700">Dosage</th>
-                  <th className="p-4 font-bold text-gray-700">Time</th>
-                  <th className="p-4 font-bold text-gray-700">Frequency</th>
-                  <th className="p-4 font-bold text-gray-700 text-right">Actions</th>
+                  <th className="p-4 px-6">Name</th>
+                  <th className="p-4 px-6">Dosage</th>
+                  <th className="p-4 px-6">Time</th>
+                  <th className="p-4 px-6">Frequency</th>
+                  <th className="p-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {medications.map(med => (
                   <MedicineRow key={med.id} med={med} />
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

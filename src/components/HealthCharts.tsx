@@ -62,7 +62,7 @@ export function HealthCharts({ measurements, variant = 'child' }: { measurements
   const isElder = variant === 'elder'
 
   return (
-    <div className={`bg-white rounded-3xl p-6 ${!isElder && 'shadow-xl shadow-gray-200/50 ring-1 ring-gray-900/5'}`}>
+    <div className={`bg-white ${isElder ? 'rounded-[2.5rem] p-6' : 'rounded-xl shadow-sm border border-slate-200 p-5'} w-full h-full flex flex-col`}>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         {/* Tabs */}
         <div className="flex overflow-x-auto pb-2 w-full hide-scrollbar gap-2">

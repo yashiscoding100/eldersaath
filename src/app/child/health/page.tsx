@@ -37,45 +37,43 @@ export default async function ChildHealthHistory() {
   }, {} as Record<string, typeof measurements>)
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Health History Timeline</h1>
-            <p className="text-gray-600 font-medium">Historical records for {relationship.elder.name}</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <AddVitalsModal elderId={relationship.elderId} />
-            <a href="/child/dashboard" className="text-blue-600 font-bold hover:underline">← Back</a>
-          </div>
-        </header>
-
-        <div className="space-y-6">
-          {Object.keys(grouped).length === 0 ? (
-             <div className="bg-white p-12 text-center rounded-xl shadow-sm border border-gray-100">
-               <p className="text-gray-500 font-medium">No health measurements recorded yet.</p>
-             </div>
-          ) : (
-            Object.entries(grouped).map(([date, records]) => (
-              <div key={date} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4">{date}</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {records.map(record => (
-                    <div key={record.id} className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex justify-between items-center">
-                      <div>
-                        <p className="text-xs font-bold text-gray-500 uppercase">{record.type}</p>
-                        <p className="font-black text-gray-900 text-xl">{record.value} <span className="text-sm font-medium text-gray-500">{record.unit}</span></p>
-                      </div>
-                      <div className="text-xl">
-                        {record.type === "BP" ? "❤️" : record.type === "SUGAR" ? "🩸" : record.type === "SPO2" ? "🫁" : record.type === "PULSE" ? "💓" : "⚕️"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
+    <div className="space-y-6">
+      <header className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Health History Timeline</h1>
+          <p className="text-sm text-slate-500 mt-1">Historical records for {relationship.elder.name}</p>
         </div>
+        <div className="flex items-center gap-4">
+          <AddVitalsModal elderId={relationship.elderId} />
+        </div>
+      </header>
+
+      <div className="space-y-6">
+        {Object.keys(grouped).length === 0 ? (
+           <div className="bg-white p-12 text-center rounded-xl shadow-sm border border-slate-200 flex flex-col items-center">
+             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100">
+               <span className="text-2xl">📉</span>
+             </div>
+             <h3 className="text-lg font-bold text-slate-900">No health records found</h3>
+             <p className="text-slate-500 text-sm mt-1">Add vitals to begin tracking health history.</p>
+           </div>
+        ) : (
+          Object.entries(grouped).map(([date, records]) => (
+            <div key={date} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <h2 className="text-sm font-bold text-slate-500 border-b border-slate-100 pb-3 mb-4 uppercase tracking-wider">{date}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {records.map(record => (
+                  <div key={record.id} className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-between items-center group hover:bg-slate-100 transition">
+                    <div>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">{record.type}</p>
+                      <p className="font-black text-slate-900 text-2xl tracking-tight">{record.value} <span className="text-sm font-semibold text-slate-400">{record.unit}</span></p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )

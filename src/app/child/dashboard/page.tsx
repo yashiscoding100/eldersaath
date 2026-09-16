@@ -1,5 +1,3 @@
-import { LinkParentButton } from "./LinkParentButton"
-import { LogoutButton } from "@/components/LogoutButton"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
@@ -7,6 +5,15 @@ import { GlobalNotice } from "@/components/GlobalNotice"
 import { HealthCharts } from "@/components/HealthCharts"
 import { AiInsights } from "@/components/AiInsights"
 import { AcknowledgeEmergencyButton } from "@/components/AcknowledgeEmergencyButton"
+import { LinkParentButton } from "./LinkParentButton"
+import { 
+  Activity, 
+  Heart, 
+  Thermometer, 
+  Scale, 
+  Droplets,
+  AlertCircle
+} from "lucide-react"
 
 export default async function ChildDashboard() {
   const session = await auth()
@@ -17,12 +24,11 @@ export default async function ChildDashboard() {
 
   const relationships = await prisma.caregiverRelationship.findMany({
     where: { childId: session.user.id },
-    include: { elder: true },
+    include: { elder: true }
   })
 
-  // Get latest health data for each linked elder
   const elderData = await Promise.all(
-    relationships.map(async (rel) => {
+    relationships.filter(r => r.status === "ACTIVE").map(async (rel) => {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
@@ -78,221 +84,190 @@ export default async function ChildDashboard() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-zinc-100 p-4 md:p-8 font-sans selection:bg-blue-200">
-      <div className="max-w-5xl mx-auto space-y-8">
-        
-        {/* Premium Glass Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-[2rem] shadow-sm ring-1 ring-gray-900/5 transition-all">
-          <div className="mb-4 md:mb-0">
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Care Dashboard</h1>
-            <p className="text-gray-500 font-medium mt-1">Welcome back, {session.user.name}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <LinkParentButton />
-            <LogoutButton />
-          </div>
-        </header>
+    <div className="space-y-6">
+      <GlobalNotice />
 
-        <GlobalNotice />
+      <div className="flex justify-between items-end mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Good morning, {session.user.name?.split(" ")[0]}
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Here is the latest health overview for your care recipients.</p>
+        </div>
+      </div>
 
-        {relationships.length === 0 ? (
-          <div className="text-center py-24 bg-white/50 backdrop-blur-xl rounded-[3rem] ring-1 ring-gray-900/5 shadow-sm">
-            <div className="text-6xl mb-6">🤝</div>
-            <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-3">Build Your Care Network</h3>
-            <p className="text-gray-500 mb-8 max-w-md mx-auto text-lg">Connect with your elderly parents to monitor their real-time health data, medications, and tasks securely.</p>
-            <LinkParentButton variant="large" />
+      {relationships.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Activity className="w-8 h-8 text-blue-600" />
           </div>
-        ) : (
-          <div className="grid gap-8">
-            {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
-              <div key={rel.id} className="bg-white/70 backdrop-blur-2xl p-6 md:p-8 rounded-[2.5rem] shadow-xl shadow-gray-200/40 ring-1 ring-gray-900/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-gray-200/50 transition-all duration-300">
-                
-                {/* Profile Header */}
-                <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md shadow-blue-500/20">
-                      {rel.elder.name?.charAt(0) || "E"}
+          <h3 className="text-xl font-bold text-slate-900 mb-2">Build Your Care Network</h3>
+          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+            Connect with your elderly parents to monitor their real-time health data, medications, and tasks securely.
+          </p>
+          <LinkParentButton variant="large" />
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency }) => (
+            <div key={rel.id} className="space-y-6">
+              
+              {/* Emergency Banner */}
+              {emergency && (
+                <div className="bg-red-50 border-l-4 border-red-600 p-5 rounded-r-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm animate-pulse-slow">
+                  <div className="flex gap-4">
+                    <div className="p-2 bg-red-100 rounded-full h-fit">
+                      <AlertCircle className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{rel.elder.name}</h2>
-                      <p className="text-gray-500 font-medium">{rel.elder.email}</p>
+                      <h3 className="text-lg font-bold text-red-900 tracking-tight">SOS Triggered</h3>
+                      <p className="text-sm text-red-800 mt-1">
+                        {rel.elder.name} needs immediate assistance!
+                        {emergency.latitude && emergency.longitude 
+                          ? ` Location: ${emergency.latitude.toFixed(4)}, ${emergency.longitude.toFixed(4)}` 
+                          : " Location unavailable."}
+                      </p>
                     </div>
                   </div>
-                  
-                  {rel.status === "PENDING" ? (
-                    <span className="px-4 py-2 rounded-full text-sm font-bold bg-orange-100 text-orange-700 ring-1 ring-orange-400/20 shadow-sm">
-                      ⏳ Pending Approval
-                    </span>
-                  ) : (
-                    <span className={`px-4 py-2 rounded-full text-sm font-bold ring-1 shadow-sm ${
-                      healthCheckDone ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-amber-50 text-amber-700 ring-amber-600/20'
-                    }`}>
-                      {healthCheckDone ? '✓ Check-in Complete' : '⚠️ Pending Check-in'}
-                    </span>
-                  )}
-                </div>
-
-                {rel.status === "PENDING" ? (
-                  <div className="bg-gradient-to-br from-orange-50 to-amber-50/50 p-8 rounded-3xl text-center ring-1 ring-orange-900/5">
-                    <div className="text-4xl mb-4">⏳</div>
-                    <p className="text-orange-900 font-extrabold text-xl mb-2 tracking-tight">Request Sent Successfully</p>
-                    <p className="text-orange-700 font-medium">Waiting for {rel.elder.name} to approve your secure connection request from their dashboard.</p>
-                  </div>
-                ) : (
-                  <>
-                    {emergency && (
-                      <div className="bg-red-600 text-white p-6 rounded-3xl shadow-xl mb-8 animate-pulse flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className="text-5xl">🚨</div>
-                          <div>
-                            <h3 className="text-2xl font-black tracking-tight">SOS TRIGGERED!</h3>
-                            <p className="font-medium text-red-100 mt-1">
-                              {rel.elder.name} needs immediate assistance! 
-                              {emergency.latitude && emergency.longitude ? 
-                                ` Location: ${emergency.latitude.toFixed(4)}, ${emergency.longitude.toFixed(4)}` : 
-                                " Location unavailable."}
-                            </p>
-                          </div>
-                        </div>
-                          <div className="flex flex-col md:flex-row gap-3">
-                            <AcknowledgeEmergencyButton emergencyId={emergency.id} />
-                            {emergency.latitude && emergency.longitude && (
-                              <a 
-                                href={`https://www.google.com/maps/search/?api=1&query=${emergency.latitude},${emergency.longitude}`}
-                                target="_blank"
-                                className="bg-white text-red-600 font-bold py-3 px-6 rounded-xl hover:bg-red-50 transition whitespace-nowrap text-center"
-                              >
-                                Open Maps
-                              </a>
-                            )}
-                          </div>
-                      </div>
+                  <div className="flex gap-3 w-full md:w-auto">
+                    <AcknowledgeEmergencyButton emergencyId={emergency.id} />
+                    {emergency.latitude && emergency.longitude && (
+                      <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${emergency.latitude},${emergency.longitude}`}
+                        target="_blank"
+                        className="bg-white border border-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg hover:bg-slate-50 transition text-sm flex items-center justify-center whitespace-nowrap shadow-sm"
+                      >
+                        Open Maps
+                      </a>
                     )}
+                  </div>
+                </div>
+              )}
 
-                    {/* Health Stats Grid - Apple Health Style */}
-                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-red-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Blood Pressure</p>
-                          <span className="text-red-500 text-lg">❤️</span>
+              {/* Status Header */}
+              {rel.status === "PENDING" ? (
+                <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+                  <div>
+                    <h4 className="font-bold text-amber-900 text-sm">Connection Pending</h4>
+                    <p className="text-xs text-amber-800">Waiting for {rel.elder.name} to accept your request.</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div className="border-b border-slate-100 p-5 bg-slate-50/50 flex justify-between items-center">
+                      <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-blue-600" />
+                        Today's Vitals
+                      </h3>
+                      <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
+                        {healthCheckDone ? "Updated Today" : "Awaiting Update"}
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-6 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                      
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Heart className="w-4 h-4 text-red-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Blood Pressure</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">{bp}</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{bp}</span>
+                          {bp !== "—" && <span className="text-xs text-slate-500 font-medium">mmHg</span>}
+                        </div>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-blue-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Sugar</p>
-                          <span className="text-blue-500 text-lg">🩸</span>
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Droplets className="w-4 h-4 text-blue-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Sugar</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">{sugar}</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{sugar}</span>
+                          {sugar !== "—" && <span className="text-xs text-slate-500 font-medium">mg/dL</span>}
+                        </div>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-cyan-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">SpO2</p>
-                          <span className="text-cyan-500 text-lg">💨</span>
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Activity className="w-4 h-4 text-cyan-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">SpO2</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
-                          {spo2}{spo2 !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">%</span> : ""}
-                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{spo2}</span>
+                          {spo2 !== "—" && <span className="text-xs text-slate-500 font-medium">%</span>}
+                        </div>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-rose-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Pulse</p>
-                          <span className="text-rose-500 text-lg">💓</span>
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Heart className="w-4 h-4 text-rose-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pulse</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
-                          {pulse}{pulse !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">bpm</span> : ""}
-                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{pulse}</span>
+                          {pulse !== "—" && <span className="text-xs text-slate-500 font-medium">bpm</span>}
+                        </div>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-orange-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Temp</p>
-                          <span className="text-orange-500 text-lg">🌡️</span>
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Thermometer className="w-4 h-4 text-orange-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Temp</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
-                          {temp}{temp !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">°F</span> : ""}
-                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{temp}</span>
+                          {temp !== "—" && <span className="text-xs text-slate-500 font-medium">°F</span>}
+                        </div>
                       </div>
 
-                      <div className="bg-white p-5 rounded-3xl shadow-sm ring-1 ring-gray-900/5 flex flex-col justify-between group hover:ring-purple-500/20 transition-all col-span-2 md:col-span-1">
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-sm font-semibold text-gray-500">Weight</p>
-                          <span className="text-purple-500 text-lg">⚖️</span>
+                      <div className="p-5 flex flex-col justify-between">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Scale className="w-4 h-4 text-purple-500" />
+                          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Weight</span>
                         </div>
-                        <p className="font-extrabold text-gray-900 text-2xl tracking-tight">
-                          {weight}{weight !== "—" ? <span className="text-sm text-gray-400 font-medium ml-1">kg</span> : ""}
-                        </p>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-2xl font-bold text-slate-900 tracking-tight">{weight}</span>
+                          {weight !== "—" && <span className="text-xs text-slate-500 font-medium">kg</span>}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* AI & Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-1">
+                      <AiInsights elderId={rel.elderId} />
+                      
+                      <div className="bg-white rounded-xl shadow-sm border border-slate-200 mt-6 p-5">
+                        <h4 className="text-sm font-bold text-slate-900 mb-4">Medication Adherence</h4>
+                        <div className="flex items-end gap-3 mb-2">
+                          <span className="text-3xl font-black tracking-tight text-slate-900">
+                            {totalMeds > 0 ? Math.round((takenMeds / totalMeds) * 100) : 0}%
+                          </span>
+                          <span className="text-sm font-medium text-slate-500 mb-1">{takenMeds} of {totalMeds} taken today</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2">
+                          <div 
+                            className="bg-emerald-500 h-2 rounded-full transition-all" 
+                            style={{ width: `${totalMeds > 0 ? (takenMeds / totalMeds) * 100 : 0}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Health Trends Graphs */}
-                    <div className="mt-8 mb-6 space-y-4">
-                      <AiInsights elderId={rel.elderId} />
+                    
+                    <div className="lg:col-span-2">
                       <HealthCharts measurements={allMeasurements} variant="child" />
                     </div>
-
-                    {/* Medicines & Deep Links */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 rounded-3xl ring-1 ring-emerald-900/5 flex flex-col justify-center">
-                        <p className="text-sm font-semibold text-emerald-700 mb-1">Medication Status</p>
-                        <p className="font-extrabold text-emerald-950 text-2xl tracking-tight">{takenMeds} <span className="text-lg font-medium text-emerald-700">/ {totalMeds} taken</span></p>
-                      </div>
-                      
-                      <a href="/child/health" className="bg-white p-5 rounded-3xl ring-1 ring-gray-900/5 hover:ring-gray-900/10 hover:shadow-md transition-all group flex flex-col justify-between">
-                        <div className="text-2xl mb-2 group-hover:scale-110 transition-transform origin-left">📈</div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Health History</p>
-                          <p className="text-xs font-medium text-blue-600 mt-1">View Analytics →</p>
-                        </div>
-                      </a>
-                      
-                      <a href="/child/medications" className="bg-white p-5 rounded-3xl ring-1 ring-gray-900/5 hover:ring-gray-900/10 hover:shadow-md transition-all group flex flex-col justify-between">
-                        <div className="text-2xl mb-2 group-hover:scale-110 transition-transform origin-left">💊</div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Medications</p>
-                          <p className="text-xs font-medium text-blue-600 mt-1">Manage Regimen →</p>
-                        </div>
-                      </a>
-
-                      <a href="/child/tasks" className="bg-white p-5 rounded-3xl ring-1 ring-gray-900/5 hover:ring-gray-900/10 hover:shadow-md transition-all group flex flex-col justify-between">
-                        <div className="text-2xl mb-2 group-hover:scale-110 transition-transform origin-left">📋</div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">Care Tasks</p>
-                          <p className="text-xs font-medium text-blue-600 mt-1">Assign Tasks →</p>
-                        </div>
-                      </a>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Global Quick Actions Bar */}
-        {relationships.length > 0 && (
-          <div className="bg-white/60 backdrop-blur-xl p-6 md:p-8 rounded-[2.5rem] shadow-sm ring-1 ring-gray-900/5 mt-8">
-            <h3 className="font-extrabold text-gray-900 mb-6 tracking-tight text-lg">Care Network Management</h3>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {[
-                { href: "/child/health", icon: "❤️", label: "Health Hub" },
-                { href: "/child/medications", icon: "💊", label: "Pharmacy" },
-                { href: "/child/tasks", icon: "📋", label: "Task List" },
-                { href: "/child/documents", icon: "📂", label: "Medical Vault" },
-                { href: "/child/care-network", icon: "🏥", label: "Care Team" }
-              ].map((item) => (
-                <a key={item.label} href={item.href} className="flex flex-col items-center justify-center p-5 bg-white rounded-3xl ring-1 ring-gray-900/5 hover:ring-blue-500/30 hover:shadow-lg hover:shadow-blue-500/10 hover:-translate-y-1 transition-all group">
-                  <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{item.icon}</div>
-                  <p className="font-semibold text-gray-700 text-sm">{item.label}</p>
-                </a>
-              ))}
+                  </div>
+                </>
+              )}
             </div>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

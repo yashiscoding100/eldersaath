@@ -98,11 +98,20 @@ export default async function EmergencyCenter() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-red-900 tracking-tight">SOS Triggered: {elder.name}</h2>
-                    <div className="flex items-center gap-4 mt-1 text-sm font-medium text-red-700">
+                    <div className="flex items-center gap-4 mt-2 text-sm font-medium text-red-700">
                       <span className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         {new Date(emergency.timestamp).toLocaleTimeString()}
                       </span>
+                      
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                        emergency.escalationLevel === 3 ? 'bg-red-800 text-white animate-pulse' :
+                        emergency.escalationLevel === 2 ? 'bg-red-600 text-white' :
+                        'bg-red-200 text-red-900'
+                      }`}>
+                        Escalation Level: {emergency.escalationLevel}
+                      </span>
+
                       {emergency.latitude && emergency.longitude && (
                         <span className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />

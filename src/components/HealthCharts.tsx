@@ -34,11 +34,11 @@ export function HealthCharts({
 
   // Filter and process data
   const chartData = useMemo(() => {
-    const cutoffDate = subDays(new Date(), timeRange)
+    const cutoffDate = timeRange === 0 ? new Date(0) : subDays(new Date(), timeRange)
     
     // Filter by type and time range, then sort by timestamp
     const filtered = measurements
-      .filter(m => m.type === activeTab && isAfter(new Date(m.timestamp), cutoffDate))
+      .filter(m => m.type === activeTab && (timeRange === 0 || isAfter(new Date(m.timestamp), cutoffDate)))
       .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       .map(m => {
         const base = {
@@ -100,7 +100,7 @@ export function HealthCharts({
 
         {/* Filters */}
         <div className="flex bg-slate-100 p-1 rounded-full shrink-0">
-          {[7, 30, 90].map(days => (
+          {[7, 30, 90, 0].map(days => (
             <button
               key={days}
               onClick={() => setTimeRange(days)}
@@ -108,7 +108,7 @@ export function HealthCharts({
                 timeRange === days ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
               } ${isElder ? 'text-base px-4 py-2' : ''}`}
             >
-              {days}d
+              {days === 0 ? 'All' : `${days}d`}
             </button>
           ))}
         </div>

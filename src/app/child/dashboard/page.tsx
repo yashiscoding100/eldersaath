@@ -38,7 +38,7 @@ export default async function ChildDashboard() {
       thirtyDaysAgo.setDate(today.getDate() - 30)
 
       const allMeasurements = await prisma.healthMeasurement.findMany({
-        where: { elderId: rel.elderId, timestamp: { gte: thirtyDaysAgo } },
+        where: { elderId: rel.elderId },
         orderBy: { timestamp: 'desc' },
       })
       

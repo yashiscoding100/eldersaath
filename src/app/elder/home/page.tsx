@@ -27,7 +27,8 @@ export default async function ElderHome() {
   const requiredVitals = profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
 
   const allMeasurements = await prisma.healthMeasurement.findMany({
-    where: { elderId: session.user.id, timestamp: { gte: thirtyDaysAgo } },
+    where: { elderId: session.user.id },
+    orderBy: { timestamp: 'desc' },
   })
   
   const todayMeasurements = allMeasurements.filter(m => m.timestamp >= today)

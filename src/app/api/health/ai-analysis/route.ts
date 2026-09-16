@@ -62,8 +62,27 @@ export async function GET(req: Request) {
     if (isHigh) issues.push("some blood sugar readings have spiked over 180")
   }
 
+  const weightMeasurements = measurements.filter(m => m.type === 'WEIGHT')
+  if (weightMeasurements.length >= 2) {
+    const recentWeights = weightMeasurements.slice(-7).map(m => parseFloat(m.value) || 0)
+    if (recentWeights.length >= 2) {
+      const earliest = recentWeights[0]
+      const latest = recentWeights[recentWeights.length - 1]
+      const diff = latest - earliest
+      if (Math.abs(diff) >= 2) { // 2kg change
+        issues.push(`there is a rapid weight ${diff > 0 ? 'gain' : 'loss'} of ${Math.abs(diff).toFixed(1)}kg recently`)
+      }
+    }
+  }
+
+  const symptoms = measurements.filter(m => m.type === 'SYMPTOMS' && m.timestamp >= new Date(Date.now() - 3 * 24 * 60 * 60 * 1000))
+  if (symptoms.length > 0) {
+    const recentSymptoms = symptoms.map(m => m.value).join(", ")
+    issues.push(`recent symptoms reported (${recentSymptoms})`)
+  }
+
   if (issues.length > 0) {
-    insight = `We noticed that ${issues.join(" and ")}. Consider discussing this trend with a healthcare professional.`
+    insight = `We noticed that ${issues.join(", and ")}. Consider discussing this trend with a healthcare professional.`
   }
 
   return NextResponse.json({

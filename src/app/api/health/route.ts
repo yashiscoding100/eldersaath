@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json()
-    const { bp, sugar, spo2, pulse, temperature, weight } = data
+    const { bp, sugar, spo2, pulse, temperature, weight, symptoms, feeling, sleep, morningMedicine } = data
     
     const measurements: { type: string; value: string; unit: string }[] = []
     
@@ -20,6 +20,13 @@ export async function POST(req: Request) {
     if (pulse) measurements.push({ type: "PULSE", value: pulse, unit: "BPM" })
     if (temperature) measurements.push({ type: "TEMP", value: temperature, unit: "°F" })
     if (weight) measurements.push({ type: "WEIGHT", value: weight, unit: "kg" })
+    
+    if (symptoms && symptoms.length > 0 && symptoms[0] !== "None") {
+      measurements.push({ type: "SYMPTOMS", value: symptoms.join(", "), unit: "list" })
+    }
+    if (feeling) measurements.push({ type: "FEELING", value: feeling, unit: "string" })
+    if (sleep) measurements.push({ type: "SLEEP", value: sleep, unit: "string" })
+    if (morningMedicine) measurements.push({ type: "MORNING_MEDS", value: morningMedicine, unit: "string" })
     
     for (const m of measurements) {
       await prisma.healthMeasurement.create({

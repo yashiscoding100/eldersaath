@@ -46,3 +46,25 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ message: "Deleted" }, { status: 200 })
   } catch (error) { return NextResponse.json({ message: "Error" }, { status: 500 }) }
 }
+
+export async function PATCH(req: Request) {
+  const session = await auth()
+  if (!session || session.user.role !== "CHILD") return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  try {
+    const { id, name, dosage, frequency, time, instructions } = await req.json()
+    if (!id) return NextResponse.json({ message: "ID missing" }, { status: 400 })
+
+    const med = await prisma.medication.findUnique({ where: { id } })
+    if (!med) return NextResponse.json({ message: "Not found" }, { status: 404 })
+
+    // Verify child has access to this elder
+    const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: med.elderId, childId: session.user.id } } })
+    if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+
+    const updatedMed = await prisma.medication.update({
+      where: { id },
+      data: { name, dosage, frequency, time, instructions }
+    })
+    return NextResponse.json(updatedMed, { status: 200 })
+  } catch (error) { return NextResponse.json({ message: "Error" }, { status: 500 }) }
+}

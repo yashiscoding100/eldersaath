@@ -1,12 +1,2 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/sos-escalation",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/medications",
-      "schedule": "* * * * *"
-    }
-  ]
 }

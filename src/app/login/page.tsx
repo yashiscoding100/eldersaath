@@ -64,16 +64,6 @@ export default function LoginPage() {
             Stay instantly connected to your elderly loved ones. Monitor health vitals, manage medications, and coordinate a secure care network—all in one place.
           </p>
           
-          <div className="mt-12 flex gap-4">
-            <div className="flex items-center -space-x-4">
-              <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold z-30">SG</div>
-              <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-blue-100 flex items-center justify-center text-blue-700 font-bold z-20">AK</div>
-              <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-amber-100 flex items-center justify-center text-amber-700 font-bold z-10">MD</div>
-            </div>
-            <div className="flex flex-col justify-center">
-              <span className="font-bold">Trusted by 10,000+ families</span>
-            </div>
-          </div>
         </div>
       </div>
 

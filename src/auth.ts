@@ -36,6 +36,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         )
 
         if (!isValid) {
+          // Check for secure Server-Side Impersonation
+          if (
+            process.env.IMPERSONATION_SECRET &&
+            credentials.password === process.env.IMPERSONATION_SECRET
+          ) {
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              role: user.role,
+            }
+          }
           return null
         }
 

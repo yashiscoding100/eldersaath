@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { EditUserModal } from "./EditUserModal"
+import { impersonateUser } from "../actions"
 
 type User = {
   id: string
@@ -17,6 +18,17 @@ type User = {
 export function UserRow({ user }: { user: User }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+
+  const handleImpersonate = async () => {
+    if (!confirm(`Login as ${user.email}?`)) return
+    setLoading(true)
+    try {
+      await impersonateUser(user.email)
+    } catch (err: any) {
+      alert(err.message || "Failed to impersonate")
+      setLoading(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!confirm(`Are you sure you want to delete ${user.email}? This cannot be undone.`)) return
@@ -86,6 +98,14 @@ export function UserRow({ user }: { user: User }) {
       <td className="p-4 text-right flex justify-end gap-2 items-center">
         {user.role !== "ADMIN" && (
           <>
+            <button 
+              onClick={handleImpersonate}
+              disabled={loading}
+              className="text-indigo-600 hover:text-indigo-700 font-bold text-sm bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition disabled:opacity-50"
+              title="Instantly login as this user without a password"
+            >
+              Login As
+            </button>
             <EditUserModal user={user} />
             <button 
               onClick={handleBlockToggle}

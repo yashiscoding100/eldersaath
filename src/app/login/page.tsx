@@ -18,6 +18,13 @@ export default function LoginPage() {
 
   // Auto-login logic for Capacitor persistent sessions
   useEffect(() => {
+    // Only run this persistent login hack if we are inside the Capacitor Android App
+    const isCapacitor = typeof window !== "undefined" && !!(window as any).Capacitor?.isNative;
+    if (!isCapacitor) {
+      setAutoLoggingIn(false);
+      return;
+    }
+
     const savedEmail = localStorage.getItem("es_persistent_email")
     const savedPassword = localStorage.getItem("es_persistent_password")
     
@@ -66,8 +73,11 @@ export default function LoginPage() {
       }
 
       // Save for native app persistence
-      localStorage.setItem("es_persistent_email", formData.email)
-      localStorage.setItem("es_persistent_password", formData.password)
+      const isCapacitor = typeof window !== "undefined" && !!(window as any).Capacitor?.isNative;
+      if (isCapacitor) {
+        localStorage.setItem("es_persistent_email", formData.email)
+        localStorage.setItem("es_persistent_password", formData.password)
+      }
 
       router.push("/dashboard")
       router.refresh()

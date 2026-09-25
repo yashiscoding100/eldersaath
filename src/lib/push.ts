@@ -76,7 +76,6 @@ export async function sendPushNotification(userId: string, payload: Record<strin
         android: {
           priority: "high" as const,
           notification: {
-            channelId: "sos_alarms",
             sound: "default"
           }
         }

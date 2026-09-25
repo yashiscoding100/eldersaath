@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { UserRow } from "./UserRow"
 import { CreateUserModal } from "./CreateUserModal"
+import { BroadcastButton } from "./BroadcastButton"
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -14,7 +15,10 @@ export default async function AdminUsersPage() {
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">User Management</h2>
           <p className="text-slate-500 mt-2">View and manage all registered accounts.</p>
         </div>
-        <CreateUserModal />
+        <div className="flex gap-3">
+          <BroadcastButton />
+          <CreateUserModal />
+        </div>
       </header>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

@@ -3,7 +3,8 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { EditUserModal } from "./EditUserModal"
-import { impersonateUser, testAlarm } from "../actions"
+import { NotificationModal } from "./NotificationModal"
+import { impersonateUser } from "../actions"
 
 type User = {
   id: string
@@ -30,17 +31,10 @@ export function UserRow({ user }: { user: User }) {
     }
   }
 
-  const handleTestAlarm = async () => {
-    if (!confirm(`Test the alarm on ${user.email}'s phone?`)) return
-    setLoading(true)
-    try {
-      const res = await testAlarm(user.id)
-      alert(res.message)
-    } catch (err: any) {
-      alert(err.message || "Failed to trigger alarm")
-    } finally {
-      setLoading(false)
-    }
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false)
+
+  const handleTestAlarm = () => {
+    setIsNotificationModalOpen(true)
   }
 
   const handleDelete = async () => {
@@ -115,9 +109,9 @@ export function UserRow({ user }: { user: User }) {
               onClick={handleTestAlarm}
               disabled={loading}
               className="text-amber-600 hover:text-amber-700 font-bold text-sm bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-md transition disabled:opacity-50"
-              title="Test the push notification alarm on this device"
+              title="Send a custom notification to this user"
             >
-              🔔 Ring
+              🔔 Send Alert
             </button>
             <button 
               onClick={handleImpersonate}
@@ -147,6 +141,12 @@ export function UserRow({ user }: { user: User }) {
           </>
         )}
       </td>
+      <NotificationModal 
+        isOpen={isNotificationModalOpen} 
+        onClose={() => setIsNotificationModalOpen(false)} 
+        targetUserId={user.id} 
+        targetUserName={user.name || user.email} 
+      />
     </tr>
   )
 }

@@ -13,6 +13,11 @@ export function PushSubscriptionManager() {
       PushNotifications.checkPermissions().then((res) => {
         if (res.receive === 'granted') setIsSubscribed(true)
       })
+      
+      // Force notifications to show even when app is open!
+      PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        alert("ALARM RECEIVED: " + notification.title + "\n" + notification.body);
+      });
     } else {
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
         setSupported(false)
@@ -38,6 +43,16 @@ export function PushSubscriptionManager() {
           throw new Error('User denied permissions!')
         }
         
+        // Create the Android Notification Channel explicitly!
+        await PushNotifications.createChannel({
+          id: 'sos_alarms',
+          name: 'Emergency Alarms',
+          description: 'High priority SOS alarms',
+          importance: 5,
+          visibility: 1,
+          vibration: true
+        });
+
         // Setup listener before registering
         PushNotifications.addListener('registration', async (token) => {
            await fetch("/api/push", {

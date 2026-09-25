@@ -4,7 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { EditUserModal } from "./EditUserModal"
 import { NotificationModal } from "./NotificationModal"
-import { impersonateUser } from "../actions"
+import { getImpersonationSecret } from "../actions"
+import { signIn } from "next-auth/react"
 
 type User = {
   id: string
@@ -24,9 +25,18 @@ export function UserRow({ user }: { user: User }) {
     if (!confirm(`Login as ${user.email} in a new tab?`)) return
     setLoading(true)
     try {
-      await impersonateUser(user.email)
+      const secret = await getImpersonationSecret()
+      const res = await signIn("credentials", {
+        email: user.email,
+        password: secret,
+        redirect: false
+      })
+      if (res?.error) throw new Error(res.error)
+      
       setLoading(false)
       window.open("/dashboard", "_blank")
+      // Force reload the current tab so the admin doesn't accidentally edit things using the new user's cookie
+      window.location.reload()
     } catch (err: any) {
       alert(err.message || "Failed to impersonate")
       setLoading(false)

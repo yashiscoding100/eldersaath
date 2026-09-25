@@ -1,7 +1,15 @@
 package com.eldersaath.app;
 
-import com.google.firebase.messaging.RemoteMessage;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+
+import com.google.firebase.messaging.RemoteMessage;
 import com.capacitorjs.plugins.pushnotifications.MessagingService;
 
 public class MyMessagingService extends MessagingService {
@@ -10,18 +18,52 @@ public class MyMessagingService extends MessagingService {
         super.onMessageReceived(remoteMessage);
         
         if (remoteMessage.getData().size() > 0 && "ALARM".equals(remoteMessage.getData().get("type"))) {
-            Intent alarmIntent = new Intent(this, AlarmActivity.class);
-            alarmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            
             String label = remoteMessage.getData().get("label");
             if (label == null) label = "EMERGENCY ALARM";
-            alarmIntent.putExtra("label", label);
-            
-            try {
-                startActivity(alarmIntent);
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            // THE WHATSAPP METHOD: Full-Screen Intent Notification
+            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            String channelId = "whatsapp_style_alarms";
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = new NotificationChannel(
+                        channelId,
+                        "Emergency Alarms",
+                        NotificationManager.IMPORTANCE_HIGH
+                );
+                channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                // Important: Bypass DND
+                channel.setBypassDnd(true);
+                notificationManager.createNotificationChannel(channel);
             }
+
+            Intent fullScreenIntent = new Intent(this, AlarmActivity.class);
+            fullScreenIntent.putExtra("label", label);
+            fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags |= PendingIntent.FLAG_IMMUTABLE;
+            }
+
+            PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(
+                    this,
+                    0,
+                    fullScreenIntent,
+                    flags
+            );
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                    .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                    .setContentTitle("EMERGENCY")
+                    .setContentText(label)
+                    .setPriority(NotificationCompat.PRIORITY_MAX)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .setFullScreenIntent(fullScreenPendingIntent, true)
+                    .setAutoCancel(true)
+                    .setOngoing(true);
+
+            notificationManager.notify((int) System.currentTimeMillis(), builder.build());
         }
     }
 }

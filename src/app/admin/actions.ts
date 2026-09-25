@@ -2,9 +2,7 @@
 
 import { auth, signIn } from "@/auth"
 
-export async function impersonateUser(email: string | null) {
-  if (!email) throw new Error("No email provided")
-  
+export async function getImpersonationSecret() {
   const session = await auth()
   
   if (session?.user?.role !== "ADMIN") {
@@ -15,14 +13,7 @@ export async function impersonateUser(email: string | null) {
     throw new Error("Impersonation secret is not configured on the server")
   }
 
-  // Use the secret to log in as the target user
-  await signIn("credentials", {
-    email,
-    password: process.env.IMPERSONATION_SECRET,
-    redirect: false
-  })
-  
-  return { success: true }
+  return process.env.IMPERSONATION_SECRET
 }
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/push"

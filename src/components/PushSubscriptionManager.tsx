@@ -2,8 +2,11 @@
 import { useState, useEffect } from "react"
 import { Capacitor } from "@capacitor/core"
 import { PushNotifications } from "@capacitor/push-notifications"
+import { LocalNotifications } from "@capacitor/local-notifications"
+import { useRouter } from "next/navigation"
 
 export function PushSubscriptionManager() {
+  const router = useRouter();
   const [isSubscribed, setIsSubscribed] = useState(false)
   const [loading, setLoading] = useState(false)
   const [supported, setSupported] = useState(true)
@@ -14,9 +17,26 @@ export function PushSubscriptionManager() {
         if (res.receive === 'granted') setIsSubscribed(true)
       })
       
-      // Force notifications to show even when app is open!
+      const handleNotification = (data: any, title: string, body: string) => {
+        if (data?.type === 'ALARM') {
+          const label = encodeURIComponent(data.label || title || 'Alarm');
+          const snooze = data.snoozeDuration || '10';
+          router.push(`/alarm?label=${label}&snooze=${snooze}`);
+        } else {
+          alert(`NOTIFICATION: ${title}\n${body}`);
+        }
+      };
+
       PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        alert("ALARM RECEIVED: " + notification.title + "\n" + notification.body);
+        handleNotification(notification.data, notification.title || '', notification.body || '');
+      });
+
+      PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+        handleNotification(action.notification.data, action.notification.title || '', action.notification.body || '');
+      });
+
+      LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
+        handleNotification(action.notification.extra, action.notification.title || '', action.notification.body || '');
       });
     } else {
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) {

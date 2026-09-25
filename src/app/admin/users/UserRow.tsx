@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { EditUserModal } from "./EditUserModal"
-import { impersonateUser } from "../actions"
+import { impersonateUser, testAlarm } from "../actions"
 
 type User = {
   id: string
@@ -26,6 +26,19 @@ export function UserRow({ user }: { user: User }) {
       await impersonateUser(user.email)
     } catch (err: any) {
       alert(err.message || "Failed to impersonate")
+      setLoading(false)
+    }
+  }
+
+  const handleTestAlarm = async () => {
+    if (!confirm(`Test the alarm on ${user.email}'s phone?`)) return
+    setLoading(true)
+    try {
+      const res = await testAlarm(user.id)
+      alert(res.message)
+    } catch (err: any) {
+      alert(err.message || "Failed to trigger alarm")
+    } finally {
       setLoading(false)
     }
   }
@@ -98,6 +111,14 @@ export function UserRow({ user }: { user: User }) {
       <td className="p-4 text-right flex justify-end gap-2 items-center">
         {user.role !== "ADMIN" && (
           <>
+            <button 
+              onClick={handleTestAlarm}
+              disabled={loading}
+              className="text-amber-600 hover:text-amber-700 font-bold text-sm bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded-md transition disabled:opacity-50"
+              title="Test the push notification alarm on this device"
+            >
+              🔔 Ring
+            </button>
             <button 
               onClick={handleImpersonate}
               disabled={loading}

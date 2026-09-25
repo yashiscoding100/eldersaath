@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "381824521583",
+    "project_id": "eldersaath",
+    "storage_bucket": "eldersaath.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381824521583:android:cdf8d6fe8ba9aaba2a449a",
+        "android_client_info": {
+          "package_name": "com.eldersaath.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCM-8K34zmo3kHaIPyBXttMB_RnS6xfq4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

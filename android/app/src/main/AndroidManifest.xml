@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -34,6 +35,10 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
         <activity android:name=".AlarmActivity" android:exported="true" android:showOnLockScreen="true" />
+        
+        <!-- Force Android to ignore Capacitor's MessagingService and ONLY use ours -->
+        <service android:name="com.capacitorjs.plugins.pushnotifications.MessagingService" tools:node="remove" />
+        
         <service android:name=".MyMessagingService" android:exported="true">
             <intent-filter android:priority="999">
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

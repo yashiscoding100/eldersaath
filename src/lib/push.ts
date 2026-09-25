@@ -84,11 +84,14 @@ export async function sendPushNotification(userId: string, payload: Record<strin
       }
       
       const token = sub.endpoint.replace("fcm:", "")
-      const message = {
-        notification: {
-          title: payload.title as string,
-          body: payload.body as string,
-        },
+      const isAlarm = payload.type === 'ALARM';
+      const message: any = {
+        ...(isAlarm ? {} : {
+          notification: {
+            title: payload.title as string,
+            body: payload.body as string,
+          }
+        }),
         data: payload as Record<string, string>,
         token: token,
         android: {
@@ -144,11 +147,14 @@ export async function broadcastPushNotification(payload: Record<string, unknown>
       if (!firebaseInitialized) return Promise.resolve()
       
       const token = sub.endpoint.replace("fcm:", "")
-      const message = {
-        notification: {
-          title: payload.title as string,
-          body: payload.body as string,
-        },
+      const isAlarm = payload.type === 'ALARM';
+      const message: any = {
+        ...(isAlarm ? {} : {
+          notification: {
+            title: payload.title as string,
+            body: payload.body as string,
+          }
+        }),
         data: payload as Record<string, string>,
         token: token,
         android: {

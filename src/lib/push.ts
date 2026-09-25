@@ -19,6 +19,7 @@ if (publicKey && privateKey) {
 
 // 2. Setup Firebase Admin (FCM)
 let firebaseInitialized = false
+let firebaseInitError = ""
 try {
   if (!getApps().length) {
     let serviceAccount = null
@@ -36,6 +37,8 @@ try {
       const keyPath = path.join(process.cwd(), 'firebase-admin-key.json')
       if (fs.existsSync(keyPath)) {
         serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'))
+      } else {
+        firebaseInitError = "Missing FIREBASE env vars on Vercel"
       }
     }
 
@@ -48,7 +51,8 @@ try {
   } else {
     firebaseInitialized = true
   }
-} catch (e) {
+} catch (e: any) {
+  firebaseInitError = e.message || "Unknown init error"
   console.error("Firebase admin init error:", e)
 }
 
@@ -61,8 +65,7 @@ export async function sendPushNotification(userId: string, payload: Record<strin
     // Check if it's an FCM native token
     if (sub.endpoint.startsWith("fcm:")) {
       if (!firebaseInitialized) {
-        console.warn("Firebase not initialized. Cannot send to FCM token.")
-        return Promise.resolve()
+        throw new Error("FIREBASE INIT FAILED: " + firebaseInitError);
       }
       
       const token = sub.endpoint.replace("fcm:", "")
@@ -87,6 +90,7 @@ export async function sendPushNotification(userId: string, payload: Record<strin
           if (error.code === 'messaging/registration-token-not-registered') {
             return prisma.pushSubscription.delete({ where: { id: sub.id } })
           }
+          throw new Error("FIREBASE SEND ERROR: " + error.message);
         })
     } 
     

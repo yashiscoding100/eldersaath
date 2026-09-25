@@ -7,6 +7,11 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://eldersaath.vercel.app',
     cleartext: true
+  },
+  plugins: {
+    CapacitorCookies: {
+      enabled: true,
+    }
   }
 };
 

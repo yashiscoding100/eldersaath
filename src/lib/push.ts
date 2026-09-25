@@ -96,10 +96,12 @@ export async function sendPushNotification(userId: string, payload: Record<strin
         token: token,
         android: {
           priority: "high" as const,
-          notification: {
-            channelId: "sos_alarms",
-            sound: "default"
-          }
+          ...(isAlarm ? {} : {
+            notification: {
+              channelId: "sos_alarms",
+              sound: "default"
+            }
+          })
         }
       }
       
@@ -157,13 +159,7 @@ export async function broadcastPushNotification(payload: Record<string, unknown>
         }),
         data: payload as Record<string, string>,
         token: token,
-        android: {
-          priority: "high" as const,
-          notification: {
-            channelId: "sos_alarms",
-            sound: "default"
-          }
-        }
+        android: { priority: "high" as const, ...(isAlarm ? {} : { notification: { channelId: "sos_alarms", sound: "default" } }) }
       }
       
       return getMessaging().send(message)

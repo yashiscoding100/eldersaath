@@ -14,6 +14,7 @@ export default function RegisterPage() {
     role: "CHILD", // Default
   })
   const [error, setError] = useState("")
+  const [googleError, setGoogleError] = useState("")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,7 +140,8 @@ export default function RegisterPage() {
         </div>
 
         <button
-          onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+          type="button"
+          onClick={() => setGoogleError("Continue with Google is under maintenance right now.")}
           className="w-full mt-6 bg-white border-2 border-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 transition-colors"
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -150,6 +152,11 @@ export default function RegisterPage() {
           </svg>
           Continue with Google
         </button>
+        {googleError && (
+          <p className="text-red-500 text-sm font-semibold mt-2 text-center">
+            {googleError}
+          </p>
+        )}
 
         <p className="text-center mt-6 text-gray-800 text-base font-medium">
           Already have an account?{" "}

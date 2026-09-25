@@ -12,6 +12,7 @@ export default function LoginPage() {
     password: "",
   })
   const [error, setError] = useState("")
+  const [googleError, setGoogleError] = useState("")
   const [loading, setLoading] = useState(false)
   const [autoLoggingIn, setAutoLoggingIn] = useState(true)
 
@@ -184,7 +185,8 @@ export default function LoginPage() {
           </div>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            type="button"
+            onClick={() => setGoogleError("Continue with Google is under maintenance right now.")}
             className="w-full mt-8 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-[0.98]"
           >
             <svg viewBox="0 0 24 24" className="w-5 h-5">
@@ -195,6 +197,11 @@ export default function LoginPage() {
             </svg>
             Google
           </button>
+          {googleError && (
+            <p className="text-red-500 text-sm font-semibold mt-2 text-center">
+              {googleError}
+            </p>
+          )}
 
           <p className="text-center mt-8 text-slate-600 text-sm font-medium">
             Don't have an account?{" "}

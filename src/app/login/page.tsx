@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -13,6 +13,38 @@ export default function LoginPage() {
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [autoLoggingIn, setAutoLoggingIn] = useState(true)
+
+  // Auto-login logic for Capacitor persistent sessions
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("es_persistent_email")
+    const savedPassword = localStorage.getItem("es_persistent_password")
+    
+    if (savedEmail && savedPassword) {
+      setLoading(true)
+      signIn("credentials", {
+        redirect: false,
+        email: savedEmail,
+        password: savedPassword,
+      }).then((res) => {
+        if (!res?.error) {
+          router.push("/dashboard")
+          router.refresh()
+        } else {
+          // If credentials became invalid, clear them
+          localStorage.removeItem("es_persistent_email")
+          localStorage.removeItem("es_persistent_password")
+          setAutoLoggingIn(false)
+          setLoading(false)
+        }
+      }).catch(() => {
+        setAutoLoggingIn(false)
+        setLoading(false)
+      })
+    } else {
+      setAutoLoggingIn(false)
+    }
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,12 +64,29 @@ export default function LoginPage() {
         return
       }
 
+      // Save for native app persistence
+      localStorage.setItem("es_persistent_email", formData.email)
+      localStorage.setItem("es_persistent_password", formData.password)
+
       router.push("/dashboard")
       router.refresh()
     } catch (err: any) {
       setError("An unexpected error occurred")
       setLoading(false)
     }
+  }
+
+  if (autoLoggingIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
+            <span className="text-white font-bold text-xl">ES</span>
+          </div>
+          <p className="text-slate-500 font-bold">Restoring your session...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -85,7 +85,7 @@ export function ChildLayoutShell({
             Account Settings
           </Link>
           <button 
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={() => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left"
           >
             <LogOut className="w-4 h-4" />
@@ -168,7 +168,7 @@ export function ChildLayoutShell({
             <div className="overflow-hidden flex-1">
               <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
               <button 
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
                 className="text-xs font-semibold text-slate-500 hover:text-red-600 transition truncate mt-0.5 flex items-center gap-1"
               >
                 <LogOut className="w-3 h-3" /> Sign out

@@ -1,8 +1,17 @@
 import Link from "next/link"
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+import LandingAutoLogin from "@/components/LandingAutoLogin"
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth()
+  if (session) {
+    redirect("/dashboard")
+  }
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+    <>
+      <LandingAutoLogin />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="text-center max-w-2xl">
         <h1 className="text-5xl font-extrabold text-blue-600 tracking-tight mb-4">
           Elder Saath
@@ -26,6 +35,7 @@ export default function Home() {
           </Link>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

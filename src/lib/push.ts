@@ -1,6 +1,7 @@
 import webpush from "web-push"
 import { prisma } from "./prisma"
-import * as admin from 'firebase-admin'
+import { initializeApp, getApps, cert } from 'firebase-admin/app'
+import { getMessaging } from 'firebase-admin/messaging'
 import fs from 'fs'
 import path from 'path'
 
@@ -19,7 +20,7 @@ if (publicKey && privateKey) {
 // 2. Setup Firebase Admin (FCM)
 let firebaseInitialized = false
 try {
-  if (!admin.apps.length) {
+  if (!getApps().length) {
     let serviceAccount = null
     
     // First try env vars (for Vercel)
@@ -39,8 +40,8 @@ try {
     }
 
     if (serviceAccount) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+      initializeApp({
+        credential: cert(serviceAccount)
       })
       firebaseInitialized = true
     }
@@ -81,8 +82,8 @@ export async function sendPushNotification(userId: string, payload: Record<strin
         }
       }
       
-      return admin.messaging().send(message)
-        .catch(error => {
+      return getMessaging().send(message)
+        .catch((error: any) => {
           console.error("Firebase push error:", error)
           if (error.code === 'messaging/registration-token-not-registered') {
             return prisma.pushSubscription.delete({ where: { id: sub.id } })
@@ -103,7 +104,7 @@ export async function sendPushNotification(userId: string, payload: Record<strin
       }
       
       return webpush.sendNotification(pushSubscription, JSON.stringify(payload))
-        .catch(error => {
+        .catch((error: any) => {
           console.error("Web push error:", error)
           if (error.statusCode === 410 || error.statusCode === 404) {
             return prisma.pushSubscription.delete({ where: { id: sub.id } })

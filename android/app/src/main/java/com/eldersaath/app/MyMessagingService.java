@@ -22,6 +22,9 @@ public class MyMessagingService extends MessagingService {
             
             String label = remoteMessage.getData().get("label");
             if (label == null) label = "EMERGENCY ALARM";
+            
+            String body = remoteMessage.getData().get("body");
+            if (body == null) body = "If you don't want to take your medicine right now, snooze it and take it after 5 mins.";
 
             try {
                 // THE WHATSAPP METHOD: Full-Screen Intent Notification
@@ -42,6 +45,7 @@ public class MyMessagingService extends MessagingService {
 
                 Intent fullScreenIntent = new Intent(this, AlarmActivity.class);
                 fullScreenIntent.putExtra("label", label);
+                fullScreenIntent.putExtra("body", body);
                 fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
                 int flags = PendingIntent.FLAG_UPDATE_CURRENT;

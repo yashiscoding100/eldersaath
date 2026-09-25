@@ -1,1 +1,0 @@
-const fs = require('fs'); let content = fs.readFileSync('src/app/admin/actions.ts', 'utf8'); content = content.substring(0, content.indexOf('export async function testAlarm')); fs.writeFileSync('src/app/admin/actions.ts', content);

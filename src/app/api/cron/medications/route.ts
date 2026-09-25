@@ -25,11 +25,13 @@ export async function GET(req: Request) {
       })
 
       if (!existingLog) {
-        // Send Push to Elder
+        // Send Full-Screen Native Alarm to Elder
         await sendPushNotification(med.elderId, {
           title: "Medicine Time",
-          body: `It's time to take ${med.name} (${med.dosage})`,
-          url: "/elder/medications"
+          label: `Time for ${med.name}!`,
+          body: med.instructions || `Please take ${med.dosage} now.`,
+          url: "/elder/medications",
+          type: "ALARM"
         })
         sent++
       }

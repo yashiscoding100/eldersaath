@@ -21,10 +21,12 @@ export function UserRow({ user }: { user: User }) {
   const [loading, setLoading] = useState(false)
 
   const handleImpersonate = async () => {
-    if (!confirm(`Login as ${user.email}?`)) return
+    if (!confirm(`Login as ${user.email} in a new tab?`)) return
     setLoading(true)
     try {
       await impersonateUser(user.email)
+      setLoading(false)
+      window.open("/dashboard", "_blank")
     } catch (err: any) {
       alert(err.message || "Failed to impersonate")
       setLoading(false)

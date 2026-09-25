@@ -19,8 +19,10 @@ export async function impersonateUser(email: string | null) {
   await signIn("credentials", {
     email,
     password: process.env.IMPERSONATION_SECRET,
-    redirectTo: "/" // Redirect to home/dashboard after successful impersonation
+    redirect: false
   })
+  
+  return { success: true }
 }
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/push"

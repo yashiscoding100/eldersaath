@@ -1,8 +1,10 @@
 import webpush from "web-push"
 import { prisma } from "./prisma"
+import * as admin from 'firebase-admin'
+import fs from 'fs'
+import path from 'path'
 
-// Ensure you generate VAPID keys using `npx web-push generate-vapid-keys`
-// and set them in your .env file
+// 1. Setup Web Push (VAPID)
 const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ""
 const privateKey = process.env.VAPID_PRIVATE_KEY || ""
 
@@ -14,33 +16,100 @@ if (publicKey && privateKey) {
   )
 }
 
-export async function sendPushNotification(userId: string, payload: Record<string, unknown>) {
-  if (!publicKey || !privateKey) {
-    console.warn("VAPID keys not configured. Skipping push notification.")
-    return
-  }
+// 2. Setup Firebase Admin (FCM)
+let firebaseInitialized = false
+try {
+  if (!admin.apps.length) {
+    let serviceAccount = null
+    
+    // First try env vars (for Vercel)
+    if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) {
+      serviceAccount = {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      }
+    } 
+    // Fallback to local file
+    else {
+      const keyPath = path.join(process.cwd(), 'firebase-admin-key.json')
+      if (fs.existsSync(keyPath)) {
+        serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'))
+      }
+    }
 
+    if (serviceAccount) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      })
+      firebaseInitialized = true
+    }
+  } else {
+    firebaseInitialized = true
+  }
+} catch (e) {
+  console.error("Firebase admin init error:", e)
+}
+
+export async function sendPushNotification(userId: string, payload: Record<string, unknown>) {
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId }
   })
 
   const notifications = subscriptions.map(sub => {
-    const pushSubscription = {
-      endpoint: sub.endpoint,
-      keys: {
-        p256dh: sub.p256dh,
-        auth: sub.auth
+    // Check if it's an FCM native token
+    if (sub.endpoint.startsWith("fcm:")) {
+      if (!firebaseInitialized) {
+        console.warn("Firebase not initialized. Cannot send to FCM token.")
+        return Promise.resolve()
       }
-    }
-    
-    return webpush.sendNotification(pushSubscription, JSON.stringify(payload))
-      .catch(error => {
-        console.error("Error sending push notification, might be expired:", error)
-        if (error.statusCode === 410 || error.statusCode === 404) {
-          // Subscription has expired or is no longer valid
-          return prisma.pushSubscription.delete({ where: { id: sub.id } })
+      
+      const token = sub.endpoint.replace("fcm:", "")
+      const message = {
+        notification: {
+          title: payload.title as string,
+          body: payload.body as string,
+        },
+        data: payload as Record<string, string>,
+        token: token,
+        android: {
+          priority: "high" as const,
+          notification: {
+            channelId: "sos_alarms",
+            sound: "default"
+          }
         }
-      })
+      }
+      
+      return admin.messaging().send(message)
+        .catch(error => {
+          console.error("Firebase push error:", error)
+          if (error.code === 'messaging/registration-token-not-registered') {
+            return prisma.pushSubscription.delete({ where: { id: sub.id } })
+          }
+        })
+    } 
+    
+    // Otherwise, handle as standard Web Push
+    else {
+      if (!publicKey || !privateKey) return Promise.resolve()
+      
+      const pushSubscription = {
+        endpoint: sub.endpoint,
+        keys: {
+          p256dh: sub.p256dh,
+          auth: sub.auth
+        }
+      }
+      
+      return webpush.sendNotification(pushSubscription, JSON.stringify(payload))
+        .catch(error => {
+          console.error("Web push error:", error)
+          if (error.statusCode === 410 || error.statusCode === 404) {
+            return prisma.pushSubscription.delete({ where: { id: sub.id } })
+          }
+        })
+    }
   })
 
   await Promise.all(notifications)

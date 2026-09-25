@@ -1,5 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
+import { Capacitor } from "@capacitor/core"
+import { PushNotifications } from "@capacitor/push-notifications"
 
 export function PushSubscriptionManager() {
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -7,36 +9,65 @@ export function PushSubscriptionManager() {
   const [supported, setSupported] = useState(true)
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setSupported(false)
-      return
-    }
-    
-    // Check existing subscription
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        if (sub) setIsSubscribed(true)
+    if (Capacitor.isNativePlatform()) {
+      PushNotifications.checkPermissions().then((res) => {
+        if (res.receive === 'granted') setIsSubscribed(true)
       })
-    })
+    } else {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        setSupported(false)
+        return
+      }
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          if (sub) setIsSubscribed(true)
+        })
+      })
+    }
   }, [])
 
   const subscribe = async () => {
     setLoading(true)
     try {
-      const reg = await navigator.serviceWorker.ready
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-      })
-      
-      await fetch("/api/push", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sub)
-      })
-      
-      setIsSubscribed(true)
-      alert("Notifications enabled successfully!")
+      if (Capacitor.isNativePlatform()) {
+        let permStatus = await PushNotifications.checkPermissions()
+        if (permStatus.receive === 'prompt') {
+          permStatus = await PushNotifications.requestPermissions()
+        }
+        if (permStatus.receive !== 'granted') {
+          throw new Error('User denied permissions!')
+        }
+        
+        // Setup listener before registering
+        PushNotifications.addListener('registration', async (token) => {
+           await fetch("/api/push", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               endpoint: "fcm:" + token.value,
+               keys: { p256dh: "fcm", auth: "fcm" }
+             })
+           })
+           setIsSubscribed(true)
+           alert("Native App Notifications enabled successfully!")
+        })
+        
+        await PushNotifications.register()
+      } else {
+        const reg = await navigator.serviceWorker.ready
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        })
+        
+        await fetch("/api/push", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(sub)
+        })
+        setIsSubscribed(true)
+        alert("Web Notifications enabled successfully!")
+      }
     } catch (err) {
       console.error(err)
       alert("Failed to enable notifications. Please ensure you have granted permission.")

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { UserRow } from "./UserRow"
 import { CreateUserModal } from "./CreateUserModal"
 import { BroadcastButton } from "./BroadcastButton"
+import { CreateFamilyModal } from "./CreateFamilyModal"
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -17,6 +18,7 @@ export default async function AdminUsersPage() {
         </div>
         <div className="flex gap-3">
           <BroadcastButton />
+          <CreateFamilyModal allUsers={users} />
           <CreateUserModal />
         </div>
       </header>

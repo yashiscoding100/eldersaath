@@ -45,3 +45,31 @@ export async function sendAdminNotification(userId: string, title: string, body:
     return { success: false, message: e.message || 'Push Error' }
   }
 }
+
+export async function createFamilyNetwork(elderIds: string[], childIds: string[]) {
+  const session = await auth()
+  if (session?.user?.role !== "ADMIN") throw new Error("Unauthorized")
+
+  let count = 0
+  for (const elderId of elderIds) {
+    for (const childId of childIds) {
+      // Upsert to avoid unique constraint errors
+      await prisma.caregiverRelationship.upsert({
+        where: {
+          elderId_childId: { elderId, childId }
+        },
+        update: {
+          status: "ACTIVE"
+        },
+        create: {
+          elderId,
+          childId,
+          status: "ACTIVE",
+          priority: 1
+        }
+      })
+      count++
+    }
+  }
+  return { success: true, message: `Successfully linked ${count} connections to form the family network!` }
+}

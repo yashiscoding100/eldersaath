@@ -46,17 +46,24 @@ export function ChildLayoutShell({
   userName?: string,
   parentCount?: number,
   hasEmergency?: boolean
+  elders?: { id: string, name: string }[]
+  activeElderId?: string
 }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [elderDropdownOpen, setElderDropdownOpen] = useState(false)
+  const elderDropdownRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false)
-      }
+          setDropdownOpen(false)
+        }
+        if (elderDropdownRef.current && !elderDropdownRef.current.contains(event.target as Node)) {
+          setElderDropdownOpen(false)
+        }
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)

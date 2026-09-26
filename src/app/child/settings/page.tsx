@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveElder } from "@/lib/activeElder"
 import { redirect } from "next/navigation"
 import { EditProfileForm } from "./EditProfileForm"
 import { PushNotificationSettings } from "./PushNotificationSettings"
@@ -13,10 +14,7 @@ export default async function ChildSettings() {
     redirect("/login")
   }
 
-  const relationship = await prisma.caregiverRelationship.findFirst({
-    where: { childId: session.user.id },
-    include: { elder: { include: { elderProfile: true } } },
-  })
+  const relationship = await getActiveElder(session.user.id)
   
   // Safe fetch for ElderProfile - don't crash if it doesn't exist yet
   const elderProfile = relationship?.elder?.elderProfile || null

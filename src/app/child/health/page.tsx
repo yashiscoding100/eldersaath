@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveElder } from "@/lib/activeElder"
 import { redirect } from "next/navigation"
 import { AddVitalsModal } from "./AddVitalsModal"
 
@@ -10,10 +11,7 @@ export default async function ChildHealthHistory() {
     redirect("/login")
   }
 
-  const relationship = await prisma.caregiverRelationship.findFirst({
-    where: { childId: session.user.id, status: "ACTIVE" },
-    include: { elder: true },
-  })
+  const relationship = await getActiveElder(session.user.id)
 
   if (!relationship) {
     return (

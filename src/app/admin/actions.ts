@@ -20,7 +20,7 @@ import { sendPushNotification } from "@/lib/push"
 
 export async function testAlarm(userId: string) { const session = await auth(); if (session?.user?.role !== 'ADMIN') return { success: false, message: 'Unauthorized' }; const subscriptions = await prisma.pushSubscription.findMany({ where: { userId } }); if (subscriptions.length === 0) return { success: false, message: 'No push subscription found.' }; let sent = 0; for (const sub of subscriptions) { try { await sendPushNotification(userId, { title: 'ALARM TEST', body: 'Test', url: '/' }); sent++; } catch (e: any) { return { success: false, message: e.message || 'Firebase Push Error' }; } } return { success: true, message: 'Sent alarm to ' + sent + ' devices.' }; }
 
-export async function sendAdminNotification(userId: string, title: string, body: string, isAlarm = false, snoozeDuration = 10) {
+export async function sendAdminNotification(userId: string, title: string, body: string, isAlarm = false, snoozeDuration = 10, snoozeText = "I'll take the medicines later") {
   const session = await auth()
   if (session?.user?.role !== 'ADMIN') return { success: false, message: 'Unauthorized' }
 
@@ -31,8 +31,7 @@ export async function sendAdminNotification(userId: string, title: string, body:
       url: '/',
       type: isAlarm ? 'ALARM' : 'NOTIFICATION',
       snoozeDuration: String(snoozeDuration),
-      label: title
-    }
+      label: title, snoozeText }
 
     if (userId === "ALL") {
       const { broadcastPushNotification } = await import('@/lib/push')

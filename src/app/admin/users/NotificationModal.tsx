@@ -15,6 +15,7 @@ export function NotificationModal({ isOpen, onClose, targetUserId, targetUserNam
   const [body, setBody] = useState("")
   const [isAlarm, setIsAlarm] = useState(false)
   const [snoozeDuration, setSnoozeDuration] = useState(10)
+  const [snoozeText, setSnoozeText] = useState("I'll take the medicines later")
   const [loading, setLoading] = useState(false)
 
   if (!isOpen) return null
@@ -24,13 +25,14 @@ export function NotificationModal({ isOpen, onClose, targetUserId, targetUserNam
     setLoading(true)
     
     try {
-      const res = await sendAdminNotification(targetUserId, title, body, isAlarm, snoozeDuration)
+      const res = await sendAdminNotification(targetUserId, title, body, isAlarm, snoozeDuration, snoozeText)
       alert(res.message)
       if (res.success) {
         setTitle("")
         setBody("")
         setIsAlarm(false)
         setSnoozeDuration(10)
+        setSnoozeText("I'll take the medicines later")
         onClose()
       }
     } catch (err: any) {
@@ -97,7 +99,19 @@ export function NotificationModal({ isOpen, onClose, targetUserId, targetUserNam
           </div>
 
           {isAlarm && (
-            <div className="space-y-1.5 animate-in slide-in-from-top-2">
+            <>
+              <div className="space-y-1.5 animate-in slide-in-from-top-2">
+                <label className="block text-sm font-bold text-slate-700">Custom Snooze Text</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. I'll take the medicines later"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                  value={snoozeText}
+                  onChange={(e) => setSnoozeText(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5 animate-in slide-in-from-top-2">
               <label className="block text-sm font-bold text-slate-700">Snooze Duration (Minutes)</label>
               <select
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none font-medium"
@@ -110,7 +124,8 @@ export function NotificationModal({ isOpen, onClose, targetUserId, targetUserNam
                 <option value={30}>30 Minutes</option>
                 <option value={60}>1 Hour</option>
               </select>
-            </div>
+              </div>
+            </>
           )}
 
           <div className="pt-2 flex gap-3">

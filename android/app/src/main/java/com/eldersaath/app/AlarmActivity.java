@@ -33,29 +33,40 @@ public class AlarmActivity extends Activity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setBackgroundColor(Color.RED);
-        layout.setGravity(Gravity.CENTER);
-        layout.setPadding(60, 60, 60, 60);
-
         String label = getIntent().getStringExtra("label");
         if (label == null) label = "EMERGENCY ALARM!";
         
         String body = getIntent().getStringExtra("body");
-        if (body == null) body = "If you don't want to take your medicine right now, snooze it and take it after 5 mins.";
+        if (body == null) body = "Please check the notification for more details.";
+
+        String snoozeText = getIntent().getStringExtra("snoozeText");
+        if (snoozeText == null || snoozeText.isEmpty()) {
+            snoozeText = "I'll take the medicines later";
+        }
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        
+        android.graphics.drawable.GradientDrawable bgGrad = new android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            new int[] {Color.parseColor("#1E1B4B"), Color.parseColor("#312E81")}
+        );
+        layout.setBackground(bgGrad);
+        layout.setGravity(Gravity.CENTER);
+        layout.setPadding(80, 80, 80, 80);
 
         TextView titleView = new TextView(this);
         titleView.setText(label);
-        titleView.setTextSize(36);
+        titleView.setTextSize(32);
         titleView.setTextColor(Color.WHITE);
         titleView.setGravity(Gravity.CENTER);
+        titleView.setTypeface(null, android.graphics.Typeface.BOLD);
         titleView.setPadding(0, 0, 0, 30);
 
         TextView bodyView = new TextView(this);
         bodyView.setText(body);
-        bodyView.setTextSize(20);
-        bodyView.setTextColor(Color.WHITE);
+        bodyView.setTextSize(18);
+        bodyView.setTextColor(Color.parseColor("#E0E7FF"));
         bodyView.setGravity(Gravity.CENTER);
         bodyView.setPadding(0, 0, 0, 100);
 
@@ -66,12 +77,17 @@ public class AlarmActivity extends Activity {
         btnParams.setMargins(0, 0, 0, 40);
 
         Button stopBtn = new Button(this);
-        stopBtn.setText("STOP ALARM");
-        stopBtn.setTextSize(24);
-        stopBtn.setBackgroundColor(Color.WHITE);
-        stopBtn.setTextColor(Color.RED);
-        stopBtn.setPadding(40, 40, 40, 40);
+        stopBtn.setText("TAKE MEDICINE / STOP ALARM");
+        stopBtn.setTextSize(18);
+        stopBtn.setTypeface(null, android.graphics.Typeface.BOLD);
+        android.graphics.drawable.GradientDrawable stopBg = new android.graphics.drawable.GradientDrawable();
+        stopBg.setColor(Color.parseColor("#10B981")); // Emerald Green
+        stopBg.setCornerRadius(30);
+        stopBtn.setBackground(stopBg);
+        stopBtn.setTextColor(Color.WHITE);
+        stopBtn.setPadding(40, 50, 40, 50);
         stopBtn.setLayoutParams(btnParams);
+        stopBtn.setElevation(8);
 
         stopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,15 +98,20 @@ public class AlarmActivity extends Activity {
         });
 
         Button snoozeBtn = new Button(this);
-        snoozeBtn.setText("SNOOZE (5 MINS)");
-        snoozeBtn.setTextSize(20);
-        snoozeBtn.setBackgroundColor(Color.DKGRAY);
-        snoozeBtn.setTextColor(Color.WHITE);
+        snoozeBtn.setText(snoozeText);
+        snoozeBtn.setTextSize(16);
+        android.graphics.drawable.GradientDrawable snoozeBg = new android.graphics.drawable.GradientDrawable();
+        snoozeBg.setColor(Color.parseColor("#4B5563")); // Cool Gray
+        snoozeBg.setCornerRadius(30);
+        snoozeBg.setStroke(3, Color.parseColor("#6B7280"));
+        snoozeBtn.setBackground(snoozeBg);
+        snoozeBtn.setTextColor(Color.parseColor("#F3F4F6"));
         snoozeBtn.setPadding(40, 40, 40, 40);
         snoozeBtn.setLayoutParams(btnParams);
 
         final String finalLabel = label;
         final String finalBody = body;
+        final String finalSnoozeText = snoozeText;
         
         snoozeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,6 +121,7 @@ public class AlarmActivity extends Activity {
                 Intent snoozeIntent = new Intent(AlarmActivity.this, AlarmActivity.class);
                 snoozeIntent.putExtra("label", finalLabel);
                 snoozeIntent.putExtra("body", finalBody);
+                snoozeIntent.putExtra("snoozeText", finalSnoozeText);
                 snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 
                 int flags = PendingIntent.FLAG_UPDATE_CURRENT;

@@ -1,21 +1,20 @@
-// Storage abstraction for Medical Documents
-// In production, this should connect to AWS S3, Vercel Blob, or similar.
+import { put, del } from '@vercel/blob'
 
+// Storage abstraction for Medical Documents
 export async function uploadDocument(base64Data: string, filename: string): Promise<string> {
-  // If S3 credentials are provided in the environment, use them.
-  if (process.env.AWS_S3_BUCKET && process.env.AWS_ACCESS_KEY_ID) {
-    // TODO: Implement actual AWS S3 SDK upload here
-    // const s3 = new S3Client(...)
-    // const result = await s3.send(new PutObjectCommand(...))
-    // return `https://${process.env.AWS_S3_BUCKET}.s3.amazonaws.com/${filename}`
-    console.warn("S3 configured but SDK not implemented. Falling back to DB storage.")
-  }
-  
   if (process.env.BLOB_READ_WRITE_TOKEN) {
-    // TODO: Implement Vercel Blob upload here
-    // const { url } = await put(filename, buffer, { access: 'public' })
-    // return url
-    console.warn("Vercel Blob configured but SDK not implemented. Falling back to DB storage.")
+    try {
+      // Vercel Blob requires a Buffer or Blob object, not a raw base64 string
+      // Extract the actual base64 content if it has a data URI prefix
+      const base64Content = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data
+      const buffer = Buffer.from(base64Content, 'base64')
+      
+      const { url } = await put(filename, buffer, { access: 'public' })
+      return url
+    } catch (e) {
+      console.error("Blob upload failed:", e)
+      throw new Error("Failed to upload to Vercel Blob.")
+    }
   }
 
   // MVP Fallback: Return the base64 string to be stored in the database.
@@ -24,9 +23,11 @@ export async function uploadDocument(base64Data: string, filename: string): Prom
 }
 
 export async function deleteDocument(fileUrl: string) {
-  if (fileUrl.startsWith("http")) {
-    // TODO: Implement S3/Blob deletion logic
-    console.log("Mock deleting from external storage:", fileUrl)
+  if (fileUrl.startsWith("http") && process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      await del(fileUrl)
+    } catch (e) {
+      console.error("Failed to delete blob:", e)
+    }
   }
-  // If it's base64, nothing to do on the file system/storage layer.
 }

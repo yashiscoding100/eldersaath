@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { ElderAddTaskForm } from "./ElderAddTaskForm"
 
 export default async function ElderTasks() {
   const session = await auth()
@@ -26,7 +27,11 @@ export default async function ElderTasks() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm mb-6 text-center">
         <h1 className="text-3xl font-extrabold text-gray-900">Your Wellbeing</h1>
-        <p className="text-gray-500 mt-2">Gentle reminders & care notes for you 🌸</p>
+        <p className="text-gray-500 mt-2">Gentle reminders & care notes for you</p>
+      </div>
+      
+      <div className="w-full max-w-md">
+        <ElderAddTaskForm />
       </div>
 
       <div className="w-full max-w-md space-y-4 flex-1">

@@ -19,8 +19,8 @@ export function CreateFamilyModal({ allUsers }: { allUsers: User[] }) {
   const [selectedElders, setSelectedElders] = useState<string[]>([])
   const [selectedChildren, setSelectedChildren] = useState<string[]>([])
 
-  const elders = allUsers.filter(u => u.role === "ELDER")
-  const children = allUsers.filter(u => u.role === "CHILD")
+  const elders = allUsers.filter(u => u.role.toUpperCase() === "ELDER")
+  const children = allUsers.filter(u => u.role.toUpperCase() === "CHILD")
 
   const toggleElder = (id: string) => {
     setSelectedElders(prev => prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id])

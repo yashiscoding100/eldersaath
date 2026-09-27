@@ -8,7 +8,7 @@ export function LogoutButton() {
       onClick={() => {
         localStorage.removeItem("es_persistent_email")
         localStorage.removeItem("es_persistent_password")
-        signOut({ callbackUrl: "/" })
+        signOut({ redirect: false }).then(() => { window.location.href = "/login" })
       }}
       className="text-sm text-gray-500 hover:text-red-500 transition-colors"
     >

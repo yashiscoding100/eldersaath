@@ -87,16 +87,9 @@ export function ChildLayoutShell({
           <div className="px-4 py-2 border-b border-slate-100">
             <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
           </div>
-          <Link 
-            href="/child/settings"
-            onClick={() => setDropdownOpen(false)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition"
-          >
-            <Settings className="w-4 h-4" />
-            Account Settings
-          </Link>
+          <button onClick={() => { setDropdownOpen(false); router.push("/child/settings"); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition text-left"><Settings className="w-4 h-4" />Account Settings</button>
           <button 
-            onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
+            onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); await signOut({ redirect: false }); window.location.href = "/login";; }}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left"
           >
             <LogOut className="w-4 h-4" />
@@ -201,7 +194,7 @@ export function ChildLayoutShell({
             <div className="overflow-hidden flex-1">
               <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
               <button 
-                onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
+                onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); await signOut({ redirect: false }); window.location.href = "/login";; }}
                 className="text-xs font-semibold text-slate-500 hover:text-red-600 transition truncate mt-0.5 flex items-center gap-1"
               >
                 <LogOut className="w-3 h-3" /> Sign out

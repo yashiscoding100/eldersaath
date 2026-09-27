@@ -73,6 +73,9 @@ export default async function ChildDashboard() {
       const pulse = latestMeasurements.find(m => m.type === "PULSE")
       const temp = latestMeasurements.find(m => m.type === "TEMP")
       const weight = latestMeasurements.find(m => m.type === "WEIGHT")
+      
+      const requiredDays = rel.elder.elderProfile?.vitalCheckDays || "0,1,2,3,4,5,6"
+      const isCheckRequiredToday = requiredDays.includes(today.getDay().toString())
 
       return {
         relationship: rel,
@@ -86,6 +89,7 @@ export default async function ChildDashboard() {
         totalMeds,
         takenMeds,
         healthCheckDone: latestMeasurements.length > 0,
+        isCheckRequiredToday,
         emergency,
         requiredVitals: rel.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
       }
@@ -123,7 +127,7 @@ export default async function ChildDashboard() {
         </div>
       ) : (
         <div className="space-y-8">
-          {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, emergency, requiredVitals }) => (
+          {elderData.map(({ relationship: rel, allMeasurements, bp, sugar, spo2, pulse, temp, weight, totalMeds, takenMeds, healthCheckDone, isCheckRequiredToday, emergency, requiredVitals }) => (
             <div key={rel.id} className="space-y-6">
               
               {/* Emergency Banner */}
@@ -175,7 +179,7 @@ export default async function ChildDashboard() {
                         Today's Vitals
                       </h3>
                       <span className="text-xs font-semibold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
-                        {healthCheckDone ? "Updated Today" : "Awaiting Update"}
+                        {healthCheckDone ? "? Updated Today" : (!isCheckRequiredToday ? "? Rest Day" : "? Awaiting Update")}
                       </span>
                     </div>
                     

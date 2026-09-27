@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { LogoutButton } from "@/components/LogoutButton"
+import { Settings } from "lucide-react"
+import Link from "next/link"
 import { TestAlarmButton } from "./TestAlarmButton"
 import { PendingConnections } from "./PendingConnections"
 import { GlobalNotice } from "@/components/GlobalNotice"
@@ -26,6 +28,8 @@ export default async function ElderHome() {
     where: { userId: session.user.id }
   })
   const requiredVitals = profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
+  const requiredDays = profile?.vitalCheckDays || "0,1,2,3,4,5,6"
+  const isCheckRequiredToday = requiredDays.includes(today.getDay().toString())
 
   const allMeasurements = await prisma.healthMeasurement.findMany({
     where: { elderId: session.user.id },
@@ -52,6 +56,7 @@ export default async function ElderHome() {
   const totalMeds = medications.length
   const takenMeds = medications.filter(m => m.logs.some(l => l.status === "TAKEN")).length
   const healthCheckDone = todayMeasurements.length > 0
+  const showHealthCheckAsDone = healthCheckDone || !isCheckRequiredToday
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center pb-8">
@@ -64,6 +69,9 @@ export default async function ElderHome() {
           </div>
           <div className="flex items-center gap-4">
             <PushSubscriptionManager />
+            <Link href="/elder/settings" className="w-10 h-10 flex items-center justify-center bg-slate-100 hover:bg-slate-200 rounded-full transition text-slate-700">
+              <Settings className="w-5 h-5" />
+            </Link>
             <LogoutButton />
           </div>
         </div>
@@ -77,19 +85,19 @@ export default async function ElderHome() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Health Check - Main Action Button */}
           <a href="/elder/checkin" className={`block w-full rounded-2xl p-6 text-left transition-all transform hover:-translate-y-1 shadow-sm border flex flex-col justify-between h-full ${
-            healthCheckDone 
-              ? 'bg-emerald-50 border-emerald-200 hover:shadow-emerald-100' 
-              : 'bg-blue-600 border-blue-700 text-white hover:bg-blue-700 hover:shadow-blue-200'
+            showHealthCheckAsDone 
+                ? 'bg-emerald-50 border-emerald-200 hover:shadow-emerald-100' 
+                : 'bg-blue-600 border-blue-700 text-white hover:bg-blue-700 hover:shadow-blue-200'
           }`}>
             <div className="flex justify-between items-start mb-4">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${healthCheckDone ? 'bg-emerald-100' : 'bg-blue-500'}`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${showHealthCheckAsDone ? 'bg-emerald-100' : 'bg-blue-500'}`}>
                 🩺
               </div>
             </div>
             <div>
-              <h2 className={`text-xl font-bold ${healthCheckDone ? 'text-emerald-800' : 'text-white'}`}>Health Check</h2>
-              <p className={`text-sm font-medium mt-1 ${healthCheckDone ? 'text-emerald-600' : 'text-blue-100'}`}>
-                {healthCheckDone ? '✅ Completed today' : 'Tap here to record vitals'}
+              <h2 className={`text-xl font-bold ${showHealthCheckAsDone ? 'text-emerald-800' : 'text-white'}`}>Health Check</h2>
+              <p className={`text-sm font-medium mt-1 ${showHealthCheckAsDone ? 'text-emerald-600' : 'text-blue-100'}`}>
+                {healthCheckDone ? '? Completed today' : (!isCheckRequiredToday ? 'Rest day, no check needed' : 'Tap here to record vitals')}
               </p>
             </div>
           </a>

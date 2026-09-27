@@ -68,6 +68,7 @@ model ElderProfile {
   preferredHospital String?
   notes             String?
   requiredVitals    String  @default("BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT")
+  vitalCheckDays    String  @default("0,1,2,3,4,5,6") // Comma separated days, 0=Sun, 1=Mon, etc.
   
   emergencyContacts EmergencyContact[]
 }

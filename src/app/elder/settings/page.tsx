@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { ScheduleSettings } from "./ScheduleSettings"
+import { EditProfileForm } from "@/app/child/settings/EditProfileForm"
+import { ElderPushSettings } from "./ElderPushSettings"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -18,17 +20,30 @@ export default async function ElderSettings() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 flex flex-col items-center">
-      <div className="w-full max-w-2xl bg-white shadow-sm border border-slate-200 rounded-2xl p-6">
-        <div className="flex items-center gap-4 mb-8 pb-4 border-b border-slate-100">
+      <div className="w-full max-w-2xl bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center gap-4">
           <Link href="/elder/home" className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
             <ArrowLeft className="w-6 h-6 text-slate-700" />
           </Link>
-          <h1 className="text-2xl font-bold text-slate-900">Your Settings</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Your Settings</h1>
+            <p className="text-sm text-slate-500 mt-1">Manage your profile and app preferences.</p>
+          </div>
         </div>
 
-        <ScheduleSettings 
-          initialDays={profile?.vitalCheckDays || "0,1,2,3,4,5,6"} 
-        />
+        <div className="divide-y divide-slate-100">
+          <EditProfileForm 
+            initialName={session.user.name || ""} 
+            initialEmail={session.user.email || ""} 
+          />
+          <ElderPushSettings />
+          <div className="p-6">
+            <h4 className="font-bold text-slate-900 mb-4">Vitals Check Schedule</h4>
+            <ScheduleSettings 
+              initialDays={profile?.vitalCheckDays || "0,1,2,3,4,5,6"} 
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

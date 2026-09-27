@@ -94,7 +94,7 @@ export function ChildLayoutShell({
             Account Settings
           </Link>
           <button 
-            onClick={() => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
+            onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
             className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition text-left"
           >
             <LogOut className="w-4 h-4" />
@@ -129,8 +129,8 @@ export function ChildLayoutShell({
                   {elders.map(elder => (
                     <button 
                       key={elder.id}
-                      onClick={() => {
-                        document.cookie = `activeElderId=${elder.id}; path=/`;
+                      onClick={async () => {
+                        await fetch("/api/child/active-elder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ elderId: elder.id }) });
                         window.location.reload();
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
@@ -205,7 +205,7 @@ export function ChildLayoutShell({
             <div className="overflow-hidden flex-1">
               <p className="text-sm font-bold text-slate-900 truncate">{userName}</p>
               <button 
-                onClick={() => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
+                onClick={async () => { localStorage.removeItem("es_persistent_email"); localStorage.removeItem("es_persistent_password"); signOut({ callbackUrl: "/" }); }}
                 className="text-xs font-semibold text-slate-500 hover:text-red-600 transition truncate mt-0.5 flex items-center gap-1"
               >
                 <LogOut className="w-3 h-3" /> Sign out
@@ -242,8 +242,8 @@ export function ChildLayoutShell({
                       {elders.map(elder => (
                         <button 
                           key={elder.id}
-                          onClick={() => {
-                            document.cookie = `activeElderId=${elder.id}; path=/`;
+                          onClick={async () => {
+                            await fetch("/api/child/active-elder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ elderId: elder.id }) });
                             window.location.reload();
                           }}
                           className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}

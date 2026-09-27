@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { sendWebPushNotification } from "@/lib/webpush"
+import { sendPushNotification } from "@/lib/push"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -49,20 +49,11 @@ export async function POST(req: Request) {
     
     for (const rel of relationships) {
       if (rel.child.notifyVitals) {
-        const subs = await prisma.pushSubscription.findMany({ where: { userId: rel.childId } })
-        for (const sub of subs) {
-          await sendWebPushNotification(
-            {
-              endpoint: sub.endpoint,
-              keys: { p256dh: sub.p256dh, auth: sub.auth }
-            },
-            JSON.stringify({
-              title: "Health Vitals Updated",
-              body: `${session.user.name} just logged their health vitals for today.`,
-              url: "/child/health"
-            })
-          ).catch(e => console.error("Push failed:", e))
-        }
+        await sendPushNotification(rel.childId, {
+          title: "Health Vitals Updated",
+          body: `${session.user.name} just logged their health vitals for today.`,
+          url: "/child/health"
+        })
       }
     }
 

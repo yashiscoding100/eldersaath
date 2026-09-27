@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { sendWebPushNotification } from "@/lib/webpush"
+import { sendPushNotification } from "@/lib/push"
 
 export async function POST(req: Request) {
   const session = await auth()
@@ -42,20 +42,11 @@ export async function POST(req: Request) {
     
     // Send push notification to the Elder if a Caretaker assigned this task
     if (session.user.role === "CHILD") {
-      const subs = await prisma.pushSubscription.findMany({ where: { userId: targetElderId } })
-      for (const sub of subs) {
-        await sendWebPushNotification(
-          {
-            endpoint: sub.endpoint,
-            keys: { p256dh: sub.p256dh, auth: sub.auth }
-          },
-          JSON.stringify({
-            title: "New Task Assigned",
-            body: `${session.user.name} added a new task for you: ${title}`,
-            url: "/elder/tasks"
-          })
-        ).catch(e => console.error("Push failed:", e))
-      }
+      await sendPushNotification(targetElderId, {
+        title: "New Task Assigned",
+        body: `${session.user.name} added a new task for you: ${title}`,
+        url: "/elder/tasks"
+      })
     }
     
     return NextResponse.json(task, { status: 201 })

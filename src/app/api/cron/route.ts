@@ -23,8 +23,11 @@ export async function GET(req: Request) {
     
     let firedCount = 0
     // Get time in 'hh:mm a' format in IST (for Indian users) or local server time
-    const currentLocalTime = format(now, 'hh:mm a')
-    const currentHourMin = format(now, 'HH:mm') // 24h format fallback
+    const istOptions: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true };
+    const istTimeStr = new Intl.DateTimeFormat("en-US", istOptions).format(now);
+    const currentLocalTime = istTimeStr; // e.g. "08:00 AM"
+    const istOptions24: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false };
+    const currentHourMin = new Intl.DateTimeFormat("en-US", istOptions24).format(now); // 24h format fallback
 
     for (const med of allMeds) {
       // Very basic MVP time check

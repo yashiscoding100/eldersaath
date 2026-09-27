@@ -80,7 +80,8 @@ export async function sendPushNotification(userId: string, payload: Record<strin
     // Check if it's an FCM native token
     if (sub.endpoint.startsWith("fcm:")) {
       if (!firebaseInitialized) {
-        throw new Error("FIREBASE INIT FAILED: " + firebaseInitError);
+        console.error("FIREBASE INIT FAILED: " + firebaseInitError);
+        return Promise.resolve();
       }
       
       const token = sub.endpoint.replace("fcm:", "")

@@ -113,15 +113,7 @@ export function PushSubscriptionManager() {
 
   if (!supported) return <div className="text-xs text-slate-400">Push not supported on this device.</div>
 
-  if (isSubscribed) return (
-    <div className="flex flex-col gap-2">
-      <div className="text-sm font-bold text-green-600 flex items-center gap-1">? Notifications Enabled</div>
-      <div className="flex gap-2 mt-1">
-        <button onClick={() => fetch("/api/push/test", { method: "POST", body: JSON.stringify({ type: "NORMAL" }) })} className="text-xs bg-gray-100 px-2 py-1 rounded border hover:bg-gray-200 text-gray-800">Test Push</button>
-        <button onClick={() => fetch("/api/push/test", { method: "POST", body: JSON.stringify({ type: "ALARM" }) })} className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded border hover:bg-red-200 border-red-200">Test Alarm</button>
-      </div>
-    </div>
-  )
+  if (isSubscribed) return <div className="text-sm font-bold text-green-600 flex items-center gap-1">? Notifications Enabled</div>
 
   return (
     <button 

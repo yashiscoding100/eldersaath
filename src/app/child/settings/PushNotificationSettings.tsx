@@ -5,11 +5,12 @@ import { Bell, ShieldAlert, Pill, FileText } from "lucide-react"
 
 export function PushNotificationSettings() {
   const [isOpen, setIsOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   
   const [settings, setSettings] = useState({
     sosAlerts: true,
     medicationReminders: true,
-    dailySummaries: false
+    notifyVitals: true // Loaded from DB
   })
 
   // Load from local storage on mount
@@ -17,17 +18,43 @@ export function PushNotificationSettings() {
     const saved = localStorage.getItem("elderSaath_pushSettings")
     if (saved) {
       try {
-        setSettings(JSON.parse(saved))
+        const parsed = JSON.parse(saved)
+        setSettings(s => ({ ...s, sosAlerts: parsed.sosAlerts ?? true, medicationReminders: parsed.medicationReminders ?? true }))
       } catch (e) {
         // ignore
       }
     }
+    
+    // Fetch server settings
+    fetch("/api/user/notifications")
+      .then(res => res.json())
+      .then(data => {
+        setSettings(s => ({ ...s, notifyVitals: data.notifyVitals }))
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false))
   }, [])
 
-  const handleToggle = (key: keyof typeof settings) => {
-    const newSettings = { ...settings, [key]: !settings[key] }
-    setSettings(newSettings)
-    localStorage.setItem("elderSaath_pushSettings", JSON.stringify(newSettings))
+  const handleToggle = async (key: keyof typeof settings) => {
+    const newValue = !settings[key]
+    setSettings(s => ({ ...s, [key]: newValue }))
+    
+    if (key === 'notifyVitals') {
+      try {
+        await fetch("/api/user/notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notifyVitals: newValue })
+        })
+      } catch (e) {
+        console.error("Failed to save to DB", e)
+      }
+    } else {
+      const saved = localStorage.getItem("elderSaath_pushSettings")
+      let current = {}
+      try { current = saved ? JSON.parse(saved) : {} } catch(e){}
+      localStorage.setItem("elderSaath_pushSettings", JSON.stringify({ ...current, [key]: newValue }))
+    }
   }
 
   if (!isOpen) {
@@ -102,21 +129,22 @@ export function PushNotificationSettings() {
         </div>
 
         {/* Toggle Item */}
-        <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+        <div className={`flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200 shadow-sm transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}>
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5 text-emerald-500" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-sm">Daily Health Summaries</p>
-              <p className="text-xs text-slate-500">Receive a morning digest of the previous day's vitals.</p>
+              <p className="font-bold text-slate-900 text-sm">Real-time Vitals Alerts</p>
+              <p className="text-xs text-slate-500">Get instantly notified the moment your elder logs their daily vitals.</p>
             </div>
           </div>
           <button 
-            onClick={() => handleToggle('dailySummaries')}
-            className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${settings.dailySummaries ? 'bg-blue-600' : 'bg-slate-300'}`}
+            disabled={loading}
+            onClick={() => handleToggle('notifyVitals')}
+            className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${settings.notifyVitals ? 'bg-blue-600' : 'bg-slate-300'}`}
           >
-            <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${settings.dailySummaries ? 'translate-x-5' : 'translate-x-0'}`} />
+            <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${settings.notifyVitals ? 'translate-x-5' : 'translate-x-0'}`} />
           </button>
         </div>
 

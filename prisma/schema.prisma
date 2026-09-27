@@ -19,7 +19,8 @@ model User {
   password      String?
   role          String    @default("CHILD")
   isBlocked     Boolean   @default(false)
-  blockMessage  String? // "ELDER", "CHILD", "DOCTOR", etc.
+  blockMessage  String?
+  notifyVitals  Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

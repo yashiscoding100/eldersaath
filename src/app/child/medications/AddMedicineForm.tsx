@@ -7,9 +7,6 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [scanning, setScanning] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  
   const [formData, setFormData] = useState({
     name: "",
     dosage: "",
@@ -38,46 +35,7 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
     }
   }
 
-  const handleScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setScanning(true)
-    
-    // Convert to base64
-    const reader = new FileReader()
-    reader.onloadend = async () => {
-      const base64String = reader.result as string
-      
-      try {
-        const res = await fetch("/api/ocr/prescription", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64String })
-        })
-        
-        if (res.ok) {
-          const data = await res.json()
-          if (data.extractedData) {
-            setFormData(prev => ({
-              ...prev,
-              name: data.extractedData.name || prev.name,
-              dosage: data.extractedData.dosage || prev.dosage,
-              frequency: data.extractedData.frequency || prev.frequency,
-            }))
-            alert("Prescription scanned! Please verify the extracted information before saving.")
-          }
-        }
-      } catch (error) {
-        console.error("Scan error", error)
-        alert("Failed to scan prescription.")
-      } finally {
-        setScanning(false)
-        if (fileInputRef.current) fileInputRef.current.value = ""
-      }
-    }
-    reader.readAsDataURL(file)
-  }
+  
 
   if (!isOpen) {
     return (
@@ -95,26 +53,6 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
       <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full relative">
         <h2 className="text-2xl font-black text-gray-900 mb-6 tracking-tight">Add New Medicine</h2>
         
-        <div className="mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
-          <p className="text-sm font-bold text-slate-700 mb-2">Have a prescription?</p>
-          <input 
-            type="file" 
-            accept="image/*" 
-            capture="environment" 
-            className="hidden" 
-            ref={fileInputRef}
-            onChange={handleScan}
-          />
-          <button 
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={scanning}
-            className="w-full bg-slate-900 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition hover:bg-slate-800 disabled:opacity-50"
-          >
-            {scanning ? "Scanning... Please wait" : "📸 Auto-Fill via AI Scan"}
-          </button>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">Medicine Name</label>

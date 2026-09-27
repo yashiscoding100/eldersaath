@@ -1,3 +1,4 @@
+
 "use client"
 import { useState, useEffect } from "react"
 import { Capacitor } from "@capacitor/core"
@@ -13,30 +14,53 @@ export function PushSubscriptionManager() {
 
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
-      PushNotifications.checkPermissions().then((res) => {
-        if (res.receive === 'granted') setIsSubscribed(true)
+      
+      const registerDevice = async () => {
+        try {
+          const permStatus = await PushNotifications.checkPermissions()
+          if (permStatus.receive === "granted") {
+            // ALWAYS register on boot if granted to keep FCM token fresh
+            await PushNotifications.register()
+            setIsSubscribed(true)
+          }
+        } catch(e) { console.error(e) }
+      }
+
+      PushNotifications.addListener("registration", async (token) => {
+         try {
+           await fetch("/api/push", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               endpoint: "fcm:" + token.value,
+               keys: { p256dh: "fcm", auth: "fcm" }
+             })
+           })
+         } catch(e) { console.error("Failed to sync FCM token", e) }
       })
+
+      registerDevice()
       
       const handleNotification = (data: any, title: string, body: string) => {
-        if (data?.type === 'ALARM') {
-          const label = encodeURIComponent(data.label || title || 'Alarm');
-          const snooze = data.snoozeDuration || '10';
+        if (data?.type === "ALARM") {
+          const label = encodeURIComponent(data.label || title || "Alarm");
+          const snooze = data.snoozeDuration || "10";
           router.push(`/alarm?label=${label}&snooze=${snooze}`);
         } else {
           alert(`NOTIFICATION: ${title}\n${body}`);
         }
       };
 
-      PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        handleNotification(notification.data, notification.title || '', notification.body || '');
+      PushNotifications.addListener("pushNotificationReceived", (notification) => {
+        handleNotification(notification.data, notification.title || "", notification.body || "");
       });
 
-      PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-        handleNotification(action.notification.data, action.notification.title || '', action.notification.body || '');
+      PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+        handleNotification(action.notification.data, action.notification.title || "", action.notification.body || "");
       });
 
-      LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-        handleNotification(action.notification.extra, action.notification.title || '', action.notification.body || '');
+      LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+        handleNotification(action.notification.extra, action.notification.title || "", action.notification.body || "");
       });
     } else {
       if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -56,38 +80,25 @@ export function PushSubscriptionManager() {
     try {
       if (Capacitor.isNativePlatform()) {
         let permStatus = await PushNotifications.checkPermissions()
-        if (permStatus.receive === 'prompt') {
+        if (permStatus.receive === "prompt") {
           permStatus = await PushNotifications.requestPermissions()
         }
-        if (permStatus.receive !== 'granted') {
-          throw new Error('User denied permissions!')
+        if (permStatus.receive !== "granted") {
+          throw new Error("User denied permissions!")
         }
         
-        // Create the Android Notification Channel explicitly!
         await PushNotifications.createChannel({
-          id: 'sos_alarms',
-          name: 'Emergency Alarms',
-          description: 'High priority SOS alarms',
+          id: "sos_alarms",
+          name: "Emergency Alarms",
+          description: "High priority SOS alarms",
           importance: 5,
           visibility: 1,
           vibration: true
         });
-
-        // Setup listener before registering
-        PushNotifications.addListener('registration', async (token) => {
-           await fetch("/api/push", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-               endpoint: "fcm:" + token.value,
-               keys: { p256dh: "fcm", auth: "fcm" }
-             })
-           })
-           setIsSubscribed(true)
-           alert("Native App Notifications enabled successfully!")
-        })
         
         await PushNotifications.register()
+        setIsSubscribed(true)
+        alert("Native App Notifications enabled successfully!")
       } else {
         const reg = await navigator.serviceWorker.ready
         const sub = await reg.pushManager.subscribe({

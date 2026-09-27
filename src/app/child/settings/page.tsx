@@ -37,7 +37,8 @@ export default async function ChildSettings() {
         />
         <PushNotificationSettings />
         {relationship && (
-          <HealthParameterSettings 
+          <>
+            <HealthParameterSettings 
             elderId={relationship.elderId}
             elderName={relationship.elder.name || "Elder"}
             initialVitals={relationship.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"}
@@ -48,6 +49,7 @@ export default async function ChildSettings() {
             initialSnoozeText={relationship.elder.alarmSnoozeText || "Take later"}
             initialSnoozeDuration={relationship.elder.alarmSnoozeDuration || 10}
           />
+          </>
         )}
       </div>
     </div>

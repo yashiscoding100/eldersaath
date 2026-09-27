@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Download, Loader2 } from "lucide-react"
 import html2canvas from "html2canvas"
-import jsPDF from "jspdf"
+import { jsPDF } from "jspdf"
 
 export function PrintButton() {
   const [downloading, setDownloading] = useState(false)
@@ -64,7 +64,7 @@ export function PrintButton() {
       }
     } catch (e) {
       console.error("Failed to generate PDF", e)
-      alert("Failed to generate PDF. Please try again.")
+      alert("Failed to generate PDF: " + (e instanceof Error ? e.message : String(e)))
     } finally {
       setDownloading(false)
     }

@@ -39,6 +39,8 @@ export default async function ChildLayout({ children }: { children: React.ReactN
       userName={session.user.name || "Family Member"}
       parentCount={relationships.length}
       hasEmergency={activeEmergencies > 0}
+      elders={mappedElders}
+      activeElderId={activeElderId}
     >
       {children}
     </ChildLayoutShell>

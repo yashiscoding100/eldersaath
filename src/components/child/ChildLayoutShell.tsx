@@ -73,7 +73,7 @@ export function ChildLayoutShell({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const AvatarDropdown = () => (
+  const avatarDropdownNode = (
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -148,7 +148,7 @@ export function ChildLayoutShell({
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell />
-          <AvatarDropdown />
+          {avatarDropdownNode}
         </div>
       </div>
 
@@ -268,7 +268,7 @@ export function ChildLayoutShell({
             </div>
             <NotificationBell />
             <div className="h-6 w-px bg-slate-200 mx-1"></div>
-            <AvatarDropdown />
+            {avatarDropdownNode}
           </div>
         </header>
 

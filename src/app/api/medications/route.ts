@@ -1,15 +1,50 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { sendPushNotification } from "@/lib/push"
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session || session.user.role !== "CHILD") return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   try {
-    const { elderId, name, dosage, frequency, time, instructions } = await req.json()
-    const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId, childId: session.user.id } } })
-    if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
-    const medication = await prisma.medication.create({ data: { elderId, name, dosage, frequency, time, instructions } })
+    const data = await req.json()
+    const { name, dosage, frequency, time, instructions } = data
+    let targetElderId = data.elderId
+    
+    if (session.user.role === "ELDER") {
+      targetElderId = session.user.id
+    } else if (session.user.role === "CHILD") {
+      const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: targetElderId, childId: session.user.id } } })
+      if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    } else {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+    
+    const medication = await prisma.medication.create({ data: { elderId: targetElderId, name, dosage, frequency, time, instructions } })
+
+    // If elder added it, notify caretakers
+    if (session.user.role === "ELDER") {
+      const rels = await prisma.caregiverRelationship.findMany({ where: { elderId: targetElderId, status: "ACTIVE" } })
+      for (const rel of rels) {
+        // Create in-app notification
+        await prisma.appNotification.create({
+          data: {
+            userId: rel.childId,
+            title: "New Medication Added",
+            message: `${session.user.name} added a new medication: ${name} (${dosage}) at ${time}`,
+            type: "INFO",
+            link: "/child/medications"
+          }
+        })
+        
+        // Push Notification
+        await sendPushNotification(rel.childId, {
+          title: "New Medication Added",
+          body: `${session.user.name} added a new medication: ${name} (${dosage}) at ${time}`,
+          url: "/child/medications"
+        })
+      }
+    }
     return NextResponse.json(medication, { status: 201 })
   } catch (error) { return NextResponse.json({ message: "Error" }, { status: 500 }) }
 }
@@ -29,7 +64,7 @@ export async function GET(req: Request) {
 
 export async function DELETE(req: Request) {
   const session = await auth()
-  if (!session || session.user.role !== "CHILD") return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
@@ -39,8 +74,12 @@ export async function DELETE(req: Request) {
     if (!med) return NextResponse.json({ message: "Not found" }, { status: 404 })
 
     // Verify child has access to this elder
-    const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: med.elderId, childId: session.user.id } } })
-    if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    if (session.user.role === "CHILD") {
+      const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: med.elderId, childId: session.user.id } } })
+      if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    } else if (session.user.role === "ELDER" && med.elderId !== session.user.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    }
 
     await prisma.medication.delete({ where: { id } })
     return NextResponse.json({ message: "Deleted" }, { status: 200 })
@@ -49,7 +88,7 @@ export async function DELETE(req: Request) {
 
 export async function PATCH(req: Request) {
   const session = await auth()
-  if (!session || session.user.role !== "CHILD") return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   try {
     const { id, name, dosage, frequency, time, instructions } = await req.json()
     if (!id) return NextResponse.json({ message: "ID missing" }, { status: 400 })
@@ -58,8 +97,12 @@ export async function PATCH(req: Request) {
     if (!med) return NextResponse.json({ message: "Not found" }, { status: 404 })
 
     // Verify child has access to this elder
-    const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: med.elderId, childId: session.user.id } } })
-    if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    if (session.user.role === "CHILD") {
+      const rel = await prisma.caregiverRelationship.findUnique({ where: { elderId_childId: { elderId: med.elderId, childId: session.user.id } } })
+      if (!rel || rel.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    } else if (session.user.role === "ELDER" && med.elderId !== session.user.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    }
 
     const updatedMed = await prisma.medication.update({
       where: { id },

@@ -25,26 +25,27 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  elderProfile  ElderProfile?
-  
+  elderProfile ElderProfile?
+
   // Relationships
   eldersCaredFor CaregiverRelationship[] @relation("ChildToRelationship")
   caregivers     CaregiverRelationship[] @relation("ElderToRelationship")
-  
+
   measurements   HealthMeasurement[]
   medications    Medication[]
   medicationLogs MedicationLog[]
-  elderTasks     Task[] @relation("ElderTasks")
-  assignedTasks  Task[] @relation("AssignedTasks")
+  elderTasks     Task[]              @relation("ElderTasks")
+  assignedTasks  Task[]              @relation("AssignedTasks")
 
   emergencyEvents   EmergencyEvent[]
-  medicalDocuments  MedicalDocument[] @relation("ElderDocuments")
-  uploadedDocuments MedicalDocument[] @relation("UploadedDocuments")
+  medicalDocuments  MedicalDocument[]    @relation("ElderDocuments")
+  uploadedDocuments MedicalDocument[]    @relation("UploadedDocuments")
   careProviders     CareProvider[]
   resetTokens       PasswordResetToken[]
   pushSubscriptions PushSubscription[]
   accounts          Account[]
   sessions          Session[]
+  AppNotification   AppNotification[]
 }
 
 model PushSubscription {
@@ -58,10 +59,10 @@ model PushSubscription {
 }
 
 model ElderProfile {
-  id                String  @id @default(cuid())
-  userId            String  @unique
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   dateOfBirth       DateTime?
   gender            String?
   bloodGroup        String?
@@ -69,22 +70,22 @@ model ElderProfile {
   medicalConditions String?
   preferredHospital String?
   notes             String?
-  requiredVitals    String  @default("BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT")
-  vitalCheckDays    String  @default("0,1,2,3,4,5,6") // Comma separated days, 0=Sun, 1=Mon, etc.
-  
+  requiredVitals    String    @default("BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT")
+  vitalCheckDays    String    @default("0,1,2,3,4,5,6") // Comma separated days, 0=Sun, 1=Mon, etc.
+
   emergencyContacts EmergencyContact[]
 }
 
 model EmergencyContact {
-  id        String   @id @default(cuid())
-  elderId   String
-  elder     ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
-  name      String
-  phone     String
-  relation  String
-  priority  Int      @default(1)
-  
+  id      String       @id @default(cuid())
+  elderId String
+  elder   ElderProfile @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  name     String
+  phone    String
+  relation String
+  priority Int    @default(1)
+
   createdAt DateTime @default(now())
 }
 
@@ -97,19 +98,19 @@ model CaregiverRelationship {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  elder     User     @relation("ElderToRelationship", fields: [elderId], references: [id], onDelete: Cascade)
-  child     User     @relation("ChildToRelationship", fields: [childId], references: [id], onDelete: Cascade)
+  elder User @relation("ElderToRelationship", fields: [elderId], references: [id], onDelete: Cascade)
+  child User @relation("ChildToRelationship", fields: [childId], references: [id], onDelete: Cascade)
 
   @@unique([elderId, childId])
 }
 
 model HealthMeasurement {
-  id        String   @id @default(cuid())
-  elderId   String
-  elder     User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
-  type      String   // "BP", "SUGAR", "SPO2", "PULSE", "TEMP", "WEIGHT"
-  value     String   // E.g., "138/86", "112"
+  id      String @id @default(cuid())
+  elderId String
+  elder   User   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  type      String // "BP", "SUGAR", "SPO2", "PULSE", "TEMP", "WEIGHT"
+  value     String // E.g., "138/86", "112"
   unit      String?
   source    String   @default("MANUAL") // "MANUAL", "OCR", "DEVICE"
   timestamp DateTime @default(now())
@@ -117,21 +118,21 @@ model HealthMeasurement {
 }
 
 model Medication {
-  id           String   @id @default(cuid())
-  elderId      String
-  elder        User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(cuid())
+  elderId String
+  elder   User   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
   name         String
   dosage       String
   frequency    String
-  time         String   // E.g., "08:00 AM"
+  time         String // E.g., "08:00 AM"
   instructions String?
   startDate    DateTime?
   endDate      DateTime?
-  
-  logs         MedicationLog[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  logs      MedicationLog[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 }
 
 model MedicationLog {
@@ -140,75 +141,76 @@ model MedicationLog {
   medication   Medication @relation(fields: [medicationId], references: [id], onDelete: Cascade)
   elderId      String
   elder        User       @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
-  status       String     // "TAKEN", "MISSED", "SKIPPED", "SNOOZED"
-  timestamp    DateTime   @default(now())
+
+  status    String // "TAKEN", "MISSED", "SKIPPED", "SNOOZED"
+  timestamp DateTime @default(now())
 }
 
 model Task {
-  id           String     @id @default(cuid())
-  elderId      String
-  elder        User       @relation("ElderTasks", fields: [elderId], references: [id], onDelete: Cascade)
-  assignerId   String
-  assigner     User       @relation("AssignedTasks", fields: [assignerId], references: [id], onDelete: Cascade)
-  
-  title        String
-  description  String?
-  frequency    String     @default("DAILY")
-  
-  logs         TaskLog[]
-  createdAt    DateTime   @default(now())
+  id         String @id @default(cuid())
+  elderId    String
+  elder      User   @relation("ElderTasks", fields: [elderId], references: [id], onDelete: Cascade)
+  assignerId String
+  assigner   User   @relation("AssignedTasks", fields: [assignerId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  frequency   String  @default("DAILY")
+
+  logs      TaskLog[]
+  createdAt DateTime  @default(now())
 }
 
 model TaskLog {
-  id           String     @id @default(cuid())
-  taskId       String
-  task         Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  elderId      String
-  
-  status       String     @default("COMPLETED")
-  timestamp    DateTime   @default(now())
+  id      String @id @default(cuid())
+  taskId  String
+  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  elderId String
+
+  status    String   @default("COMPLETED")
+  timestamp DateTime @default(now())
 }
 
 model EmergencyEvent {
-  id              String   @id @default(cuid())
-  elderId         String
-  elder           User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
+  id      String @id @default(cuid())
+  elderId String
+  elder   User   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
   latitude        Float?
   longitude       Float?
-  status          String   @default("ACTIVE") // "ACTIVE", "ACKNOWLEDGED", "RESOLVED"
-  escalationLevel Int      @default(1) // 1 = Primary, 2 = Secondary, 3 = Contacts
+  status          String    @default("ACTIVE") // "ACTIVE", "ACKNOWLEDGED", "RESOLVED"
+  escalationLevel Int       @default(1) // 1 = Primary, 2 = Secondary, 3 = Contacts
   acknowledgedBy  String?
   acknowledgedAt  DateTime?
   resolvedAt      DateTime?
-  timestamp       DateTime @default(now())
+  timestamp       DateTime  @default(now())
 }
 
 model MedicalDocument {
-  id          String   @id @default(cuid())
-  elderId     String
-  elder       User     @relation("ElderDocuments", fields: [elderId], references: [id], onDelete: Cascade)
-  uploaderId  String
-  uploader    User     @relation("UploadedDocuments", fields: [uploaderId], references: [id], onDelete: Cascade)
-  
-  title       String
-  fileUrl     String
-  fileType    String
-  uploadedAt  DateTime @default(now())
+  id         String @id @default(cuid())
+  elderId    String
+  elder      User   @relation("ElderDocuments", fields: [elderId], references: [id], onDelete: Cascade)
+  uploaderId String
+  uploader   User   @relation("UploadedDocuments", fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  title      String
+  fileUrl    String
+  fileType   String
+  uploadedAt DateTime @default(now())
 }
 
 model CareProvider {
-  id          String   @id @default(cuid())
-  elderId     String
-  elder       User     @relation(fields: [elderId], references: [id], onDelete: Cascade)
-  
-  name        String
-  role        String   // "DOCTOR", "NURSE", "PHYSIO"
-  phone       String?
-  email       String?
-  createdAt   DateTime @default(now())
+  id      String @id @default(cuid())
+  elderId String
+  elder   User   @relation(fields: [elderId], references: [id], onDelete: Cascade)
+
+  name      String
+  role      String // "DOCTOR", "NURSE", "PHYSIO"
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
 }
+
 model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
@@ -226,20 +228,19 @@ model Notice {
   createdAt DateTime @default(now())
 }
 
-
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token String? @db.Text    
-  access_token String? @db.Text    
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token String? @db.Text    
-  session_state      String?
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -254,4 +255,16 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model AppNotification {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  title   String
+  message String
+  type    String  @default("INFO") // "INFO", "ALERT", "SUCCESS"
+  isRead  Boolean @default(false)
+  link    String? // Optional URL to redirect to on click
+
+  createdAt DateTime @default(now())
+}

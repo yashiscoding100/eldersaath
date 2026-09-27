@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { ElderAddMedicationForm } from "./ElderAddMedicationForm"
 import { MarkTakenButton } from "./MarkTakenButton"
 
 export default async function ElderMedications() {
@@ -36,11 +37,15 @@ export default async function ElderMedications() {
         )}
       </div>
 
+      <div className="w-full max-w-md">
+        <ElderAddMedicationForm />
+      </div>
+
       <div className="w-full max-w-md space-y-4 flex-1">
         {medications.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl text-center shadow-sm">
              <p className="text-xl text-gray-600">No medicines scheduled.</p>
-             <p className="text-gray-400 mt-2">Your family member can add medicines from their dashboard.</p>
+             <p className="text-gray-400 mt-2">Add your medicines above.</p>
           </div>
         ) : (
           medications.map(med => {

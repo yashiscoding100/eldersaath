@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 
 import { signOut } from "next-auth/react"
+import { NotificationBell } from "../NotificationBell"
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/child/dashboard", icon: LayoutDashboard },
@@ -146,10 +147,7 @@ export function ChildLayoutShell({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/child/settings" className="relative cursor-pointer hover:bg-slate-100 p-2 rounded-full transition" title="Notification Settings">
-            <Bell className="w-5 h-5 text-slate-500" />
-            {hasEmergency && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
-          </Link>
+          <NotificationBell />
           <AvatarDropdown />
         </div>
       </div>
@@ -268,10 +266,7 @@ export function ChildLayoutShell({
                 className="pl-9 pr-4 py-1.5 bg-slate-100 border-transparent rounded-full text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all w-64"
               />
             </div>
-            <Link href="/child/settings" className="relative p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-full transition-colors" title="Notification Settings">
-              <Bell className="w-5 h-5" />
-              {hasEmergency && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>}
-            </Link>
+            <NotificationBell />
             <div className="h-6 w-px bg-slate-200 mx-1"></div>
             <AvatarDropdown />
           </div>

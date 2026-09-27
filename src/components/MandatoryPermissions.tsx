@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -14,29 +15,43 @@ export function MandatoryPermissions() {
     try {
       let permStatus = await PushNotifications.checkPermissions()
 
-      if (permStatus.receive === 'prompt') {
+      if (permStatus.receive === "prompt") {
         permStatus = await PushNotifications.requestPermissions()
       }
 
-      if (permStatus.receive !== 'granted') {
+      if (permStatus.receive !== "granted") {
         setIsBlocked(true)
       } else {
         setIsBlocked(false)
+        // CRITICAL BUG FIX: If granted, we MUST register with FCM and Vercel globally!
+        await PushNotifications.register()
       }
     } catch (e) {
       console.error("Failed to check permissions", e)
-      // If it fails on web/emulator without push support, we shouldn't hard block them
-      // But we will block if we are absolutely sure it's native
     }
   }
 
   useEffect(() => {
-    checkAndRequestPermissions()
-
-    // Add listener for app coming to foreground to re-check if they went to settings
+    
     if (Capacitor.isNativePlatform()) {
+      // Global Token Sync Listener
+      PushNotifications.addListener("registration", async (token) => {
+         try {
+           await fetch("/api/push", {
+             method: "POST",
+             headers: { "Content-Type": "application/json" },
+             body: JSON.stringify({
+               endpoint: "fcm:" + token.value,
+               keys: { p256dh: "fcm", auth: "fcm" }
+             })
+           })
+         } catch(e) { console.error("Failed to sync FCM token", e) }
+      })
+      
+      checkAndRequestPermissions()
+
       document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === "visible") {
           checkAndRequestPermissions()
         }
       })
@@ -49,14 +64,15 @@ export function MandatoryPermissions() {
     try {
       let permStatus = await PushNotifications.checkPermissions()
 
-      if (permStatus.receive === 'prompt') {
+      if (permStatus.receive === "prompt") {
         permStatus = await PushNotifications.requestPermissions()
       }
 
-      if (permStatus.receive !== 'granted') {
+      if (permStatus.receive !== "granted") {
         alert("To enable notifications:\n\n1. Open your phone's 'Settings' app\n2. Tap 'Apps'\n3. Find 'Elder Saath'\n4. Tap 'Notifications' and turn them ON\n\nOnce enabled, this screen will disappear automatically!")
       } else {
         setIsBlocked(false)
+        await PushNotifications.register()
       }
     } catch (e) {
       console.error(e)

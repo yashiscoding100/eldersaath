@@ -18,8 +18,8 @@ if (publicKey && privateKey) {
 }
 
 // 2. Setup Firebase Admin (FCM)
-let firebaseInitialized = false
-let firebaseInitError = ""
+export let firebaseInitialized = false
+export let firebaseInitError = ""
 try {
   if (!getApps().length) {
     let serviceAccount = null

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getApps } from "firebase-admin/app"
+import { firebaseInitError, firebaseInitialized } from "@/lib/push"
 
 export async function GET() {
   try {
@@ -19,7 +20,9 @@ export async function GET() {
       fcmTokens: fcmCount,
       webTokens: webCount,
       firebaseEnvFound: hasFirebaseEnv,
-      firebaseInitialized: isFirebaseInit
+      firebaseInitialized: isFirebaseInit,
+      localStateInit: firebaseInitialized,
+      error: firebaseInitError
     })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

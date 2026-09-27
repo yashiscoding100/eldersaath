@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { elderId, alarmSnoozeText, alarmSnoozeDuration } = await req.json()
+    const { elderId, alarmSnoozeText, alarmSnoozeDuration, sosEnabled } = await req.json()
     
     // Ensure the child has access to this elder
     const rel = await prisma.caregiverRelationship.findFirst({
@@ -23,7 +23,8 @@ export async function POST(req: Request) {
       where: { id: elderId },
       data: {
         alarmSnoozeText,
-        alarmSnoozeDuration
+        alarmSnoozeDuration,
+        sosEnabled
       }
     })
 

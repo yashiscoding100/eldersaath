@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LocalNotifications } from "@capacitor/local-notifications"
 import { Capacitor } from "@capacitor/core"
@@ -11,53 +12,45 @@ function AlarmContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const label = searchParams.get("label") || "ALARM!"
+  const label = searchParams.get("label") || "EMERGENCY ALARM!"
+  const body = searchParams.get("body") || "Please check the notification for more details."
   const snoozeDuration = parseInt(searchParams.get("snooze") || "10", 10)
-  
-  const [flashing, setFlashing] = useState(true)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const snoozeText = searchParams.get("snoozeText") || "I'll take the medicines later"
 
   useEffect(() => {
-    // Start flashing loop
-    const interval = setInterval(() => {
-      setFlashing(f => !f)
-    }, 500)
-
-    // Play a loud synthesized alarm sound via Web Audio API
+    // Play a gentle repetitive chime instead of aggressive harsh beep
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)()
       
-      const playBeep = () => {
-        if (audioCtx.state === 'closed') return
+      const playChime = () => {
+        if (audioCtx.state === "closed") return
         const oscillator = audioCtx.createOscillator()
         const gainNode = audioCtx.createGain()
         
-        oscillator.type = 'square'
-        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime) // A5
-        oscillator.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.2) // High pitch
+        oscillator.type = "sine"
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime)
+        oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.2)
         
         gainNode.gain.setValueAtTime(1, audioCtx.currentTime)
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5)
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0)
         
         oscillator.connect(gainNode)
         gainNode.connect(audioCtx.destination)
         
         oscillator.start()
-        oscillator.stop(audioCtx.currentTime + 0.5)
+        oscillator.stop(audioCtx.currentTime + 1.0)
       }
       
-      const beepInterval = setInterval(playBeep, 600)
+      const beepInterval = setInterval(playChime, 1500)
       
       return () => {
-        clearInterval(interval)
         clearInterval(beepInterval)
-        if (audioCtx.state !== 'closed') {
+        if (audioCtx.state !== "closed") {
           audioCtx.close()
         }
       }
     } catch (e) {
       console.warn("Web Audio API not supported", e)
-      return () => clearInterval(interval)
     }
   }, [])
 
@@ -80,61 +73,53 @@ function AlarmContent() {
               sound: "default",
               actionTypeId: "",
               extra: {
-                type: 'ALARM',
+                type: "ALARM",
                 label: label,
+                body: body,
                 snoozeDuration: snoozeDuration
               }
             }
           ]
         })
-        alert(`Alarm snoozed for ${snoozeDuration} minutes.`)
+        alert(`Snoozed! Waking you up again in ${snoozeDuration} mins.`)
       } catch (err) {
         console.error("Local notification error", err)
-        alert("Snoozed! (Make sure you keep the app open to ring again)")
-        // Fallback to JS timeout if native fails
-        setTimeout(() => {
-          window.location.reload()
-        }, snoozeDuration * 60 * 1000)
+        alert(`Snoozed for ${snoozeDuration} minutes.`)
       }
     } else {
       alert(`Snoozed for ${snoozeDuration} minutes.`)
-      setTimeout(() => {
-        window.location.reload()
-      }, snoozeDuration * 60 * 1000)
     }
     
     router.replace("/dashboard")
   }
 
   return (
-    <div className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center p-6 transition-colors duration-200 ${flashing ? 'bg-red-600' : 'bg-white'}`}>
-      
-      <div className="absolute top-12 animate-bounce">
-        <span className="text-7xl">🚨</span>
-      </div>
-
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md text-center space-y-8 z-10">
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-8 bg-gradient-to-b from-[#1E1B4B] to-[#312E81]">
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md text-center">
         
-        <h1 className={`text-5xl md:text-6xl font-black uppercase tracking-widest ${flashing ? 'text-white' : 'text-red-600'}`}>
-          {label}
+        <h1 className="text-[32px] font-bold text-white mb-8">
+          {decodeURIComponent(label)}
         </h1>
+
+        <p className="text-[18px] text-[#E0E7FF] mb-16 px-4">
+          {decodeURIComponent(body)}
+        </p>
         
-        <div className="w-full space-y-4 pt-12">
+        <div className="w-full space-y-8 mt-4">
           <button 
             onClick={handleStop}
-            className="w-full py-6 bg-slate-900 text-white text-3xl font-black uppercase rounded-2xl hover:scale-95 transition-transform shadow-2xl active:bg-slate-800"
+            className="w-full py-4 bg-[#10B981] text-white text-[18px] font-bold rounded-[30px] hover:scale-95 transition-transform shadow-lg"
           >
-            STOP
+            TAKE MEDICINE / STOP ALARM
           </button>
           
           <button 
             onClick={handleSnooze}
-            className={`w-full py-6 text-2xl font-black uppercase rounded-2xl border-4 transition-transform hover:scale-95 shadow-xl ${flashing ? 'bg-white text-red-600 border-white' : 'bg-slate-100 text-slate-800 border-slate-300'}`}
+            className="w-full py-4 bg-[#4B5563] border-[3px] border-[#6B7280] text-[#F3F4F6] text-[16px] font-medium rounded-[30px] hover:scale-95 transition-transform"
           >
-            SNOOZE ({snoozeDuration}M)
+            {decodeURIComponent(snoozeText)} ({snoozeDuration}M)
           </button>
         </div>
-
       </div>
     </div>
   )
@@ -142,7 +127,7 @@ function AlarmContent() {
 
 export default function AlarmPage() {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-red-600 flex items-center justify-center text-white text-3xl font-bold">LOADING ALARM...</div>}>
+    <Suspense fallback={<div className="fixed inset-0 bg-[#1E1B4B] flex items-center justify-center text-white text-3xl font-bold">LOADING...</div>}>
       <AlarmContent />
     </Suspense>
   )

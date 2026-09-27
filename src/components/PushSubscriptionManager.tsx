@@ -45,7 +45,7 @@ export function PushSubscriptionManager() {
         if (data?.type === "ALARM") {
           const label = encodeURIComponent(data.label || title || "Alarm");
           const snooze = data.snoozeDuration || "10";
-          router.push(`/alarm?label=${label}&snooze=${snooze}`);
+          const body = encodeURIComponent(data.body || ""); const snoozeText = encodeURIComponent(data.snoozeText || ""); router.push(`/alarm?label=${label}&snooze=${snooze}&body=${body}&snoozeText=${snoozeText}`);
         } else {
           alert(`NOTIFICATION: ${title}\n${body}`);
         }

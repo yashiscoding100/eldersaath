@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(req: Request) {
   const session = await auth()
   
-  if (!session || session.user.role !== "CHILD") {
+  if (!session || (session.user.role !== "CHILD" && session.user.role !== "ADMIN")) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 

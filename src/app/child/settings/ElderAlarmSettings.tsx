@@ -1,23 +1,27 @@
+
 "use client"
 
 import { useState } from "react"
-import { BellRing } from "lucide-react"
+import { BellRing, ShieldAlert } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function ElderAlarmSettings({ 
   elderId, 
   elderName,
   initialSnoozeText,
-  initialSnoozeDuration 
+  initialSnoozeDuration,
+  initialSosEnabled
 }: { 
   elderId: string, 
   elderName: string,
   initialSnoozeText: string,
-  initialSnoozeDuration: number
+  initialSnoozeDuration: number,
+  initialSosEnabled: boolean
 }) {
   const router = useRouter()
   const [snoozeText, setSnoozeText] = useState(initialSnoozeText)
   const [snoozeDuration, setSnoozeDuration] = useState(initialSnoozeDuration)
+  const [sosEnabled, setSosEnabled] = useState(initialSosEnabled)
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
@@ -26,9 +30,9 @@ export function ElderAlarmSettings({
       await fetch("/api/child/elder-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration })
+        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration, sosEnabled })
       })
-      alert("Elder Alarm Settings saved!")
+      alert("Elder Settings saved!")
       router.refresh()
     } catch (e) {
       alert("Failed to save.")
@@ -41,10 +45,10 @@ export function ElderAlarmSettings({
     <div className="p-6 bg-white flex flex-col gap-4">
       <div className="flex items-center gap-2 mb-2">
         <BellRing className="w-5 h-5 text-red-500" />
-        <h4 className="font-bold text-slate-900">{elderName}&apos;s Alarm Settings</h4>
+        <h4 className="font-bold text-slate-900">{elderName}&apos;s Settings</h4>
       </div>
       
-      <p className="text-sm text-slate-500 mb-2">Configure what happens when {elderName} snoozes an alarm on their device.</p>
+      <p className="text-sm text-slate-500 mb-2">Configure alarms and safety features for {elderName}&apos;s device.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -68,7 +72,23 @@ export function ElderAlarmSettings({
         </div>
       </div>
       
-      <div className="flex justify-end mt-2">
+      <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+        <div>
+          <h4 className="font-bold text-slate-900 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-red-500" /> 
+            Enable SOS Emergency Button
+          </h4>
+          <p className="text-sm text-slate-500 mt-1">Shows a large red SOS button on their home screen.</p>
+        </div>
+        <button
+          onClick={() => setSosEnabled(!sosEnabled)}
+          className={`w-12 h-6 rounded-full relative transition-colors ${sosEnabled ? "bg-red-500" : "bg-slate-300"}`}
+        >
+          <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${sosEnabled ? "left-6" : "left-0.5"}`} />
+        </button>
+      </div>
+      
+      <div className="flex justify-end mt-4">
         <button 
           onClick={handleSave} 
           disabled={saving}

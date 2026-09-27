@@ -24,6 +24,7 @@ export default async function ElderHome() {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(today.getDate() - 30)
 
+  const userEntity = await prisma.user.findUnique({ where: { id: session.user.id } })
   const profile = await prisma.elderProfile.findUnique({
     where: { userId: session.user.id }
   })
@@ -154,11 +155,7 @@ export default async function ElderHome() {
           />
         </div>
 
-        <div className="pt-2">
-          <TestAlarmButton />
-        </div>
-
-        {/* SOS Button - Still prominent but cleaner */}
+        {userEntity?.sosEnabled && (
         <div className="w-full mt-6">
           <a href="/elder/sos" className="block w-full bg-red-600 text-white rounded-2xl p-6 shadow-sm hover:shadow-md hover:bg-red-700 transition-all text-center border border-red-700 relative overflow-hidden flex items-center justify-center gap-3">
             <span className="text-2xl">🚨</span>
@@ -166,6 +163,7 @@ export default async function ElderHome() {
             <span className="text-2xl">🚨</span>
           </a>
         </div>
+        )}
       </div>
     </div>
   )

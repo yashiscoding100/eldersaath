@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
@@ -31,6 +32,13 @@ public class MyMessagingService extends MessagingService {
             if (snoozeText == null) snoozeText = "I'll take the medicines later";
 
             try {
+                // ACQUIRE WAKE LOCK TO FORCE CPU AWAKE
+                PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
+                if (powerManager != null) {
+                    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "ElderSaath::AlarmWakeLock");
+                    wakeLock.acquire(3 * 60 * 1000L); /*3 minutes*/
+                }
+                
                 // THE WHATSAPP METHOD: Full-Screen Intent Notification
                 NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 String channelId = "whatsapp_style_alarms";
@@ -80,6 +88,15 @@ public class MyMessagingService extends MessagingService {
 
                 notificationManager.notify((int) System.currentTimeMillis(), builder.build());
                 android.util.Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent!");
+                
+                // FORCE THE ACTIVITY TO START IF SYSTEM_ALERT_WINDOW IS GRANTED
+                try {
+                    fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(fullScreenIntent);
+                    android.util.Log.e("ALARM_DEBUG", "Forced startActivity called directly!");
+                } catch (Exception e) {
+                    android.util.Log.e("ALARM_DEBUG", "Could not force startActivity: " + e.getMessage());
+                }
                 
             } catch (Exception e) {
                 android.util.Log.e("ALARM_DEBUG", "FATAL CRASH IN JAVA: " + e.getMessage());

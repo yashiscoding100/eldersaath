@@ -12,8 +12,21 @@ export async function POST(req: Request) {
   try {
     const { emergencyId } = await req.json()
     
-    await prisma.emergencyEvent.update({
-      where: { id: emergencyId },
+    // Find the emergency to get the elderId
+    const emergency = await prisma.emergencyEvent.findUnique({
+      where: { id: emergencyId }
+    })
+
+    if (!emergency) {
+      return NextResponse.json({ message: "Not found" }, { status: 404 })
+    }
+
+    // Resolve ALL active emergencies for this elder (in case they tapped SOS multiple times)
+    await prisma.emergencyEvent.updateMany({
+      where: { 
+        elderId: emergency.elderId,
+        status: "ACTIVE"
+      },
       data: {
         status: "RESOLVED",
         acknowledgedBy: session.user.id,

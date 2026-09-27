@@ -23,9 +23,7 @@ export function AcknowledgeEmergencyButton({ emergencyId }: { emergencyId: strin
         return
       }
       
-      startTransition(() => {
-        router.refresh()
-      })
+      window.location.reload()
     } catch (e) {
       console.error(e)
       setLoading(false)

@@ -14,12 +14,28 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.capacitorjs.plugins.pushnotifications.MessagingService;
 
 public class MyMessagingService extends MessagingService {
+
+    // THROTTLE: Only allow one alarm every 10 seconds to prevent infinite storm
+    private static long lastAlarmTime = 0;
+    private static final long ALARM_COOLDOWN_MS = 10000; // 10 seconds
+
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        super.onMessageReceived(remoteMessage);
         
         if (remoteMessage.getData().size() > 0 && "ALARM".equals(remoteMessage.getData().get("type"))) {
-            android.util.Log.e("ALARM_DEBUG", "FCM ALARM RECEIVED IN BACKGROUND!");
+            
+            // THROTTLE CHECK: Skip if we already fired an alarm in the last 10 seconds
+            long now = System.currentTimeMillis();
+            if (now - lastAlarmTime < ALARM_COOLDOWN_MS) {
+                android.util.Log.e("ALARM_DEBUG", "THROTTLED - Skipping duplicate alarm (fired " + (now - lastAlarmTime) + "ms ago)");
+                return; // DO NOT call super, DO NOT fire another alarm
+            }
+            lastAlarmTime = now;
+            
+            android.util.Log.e("ALARM_DEBUG", "FCM ALARM RECEIVED - PROCESSING (single fire)");
+            
+            // DO NOT call super.onMessageReceived() for ALARM type messages!
+            // The parent Capacitor MessagingService re-dispatches the message and causes duplicates.
             
             String label = remoteMessage.getData().get("label");
             if (label == null) label = "EMERGENCY ALARM";
@@ -40,11 +56,14 @@ public class MyMessagingService extends MessagingService {
                 // ACQUIRE WAKE LOCK TO FORCE CPU AWAKE
                 PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 if (powerManager != null) {
-                    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "ElderSaath::AlarmWakeLock");
-                    wakeLock.acquire(3 * 60 * 1000L); /*3 minutes*/
+                    PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
+                        PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, 
+                        "ElderSaath::AlarmWakeLock"
+                    );
+                    wakeLock.acquire(3 * 60 * 1000L); // 3 minutes
                 }
                 
-                // THE WHATSAPP METHOD: Full-Screen Intent Notification
+                // Create notification channel
                 NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                 String channelId = "whatsapp_style_alarms";
 
@@ -57,7 +76,6 @@ public class MyMessagingService extends MessagingService {
                     channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
                     channel.setBypassDnd(true);
                     notificationManager.createNotificationChannel(channel);
-                    android.util.Log.e("ALARM_DEBUG", "Notification Channel Created");
                 }
 
                 Intent fullScreenIntent = new Intent(this, AlarmActivity.class);
@@ -66,7 +84,7 @@ public class MyMessagingService extends MessagingService {
                 fullScreenIntent.putExtra("snoozeText", snoozeText);
                 fullScreenIntent.putExtra("snoozeDuration", snoozeDuration);
                 if (elderId != null) fullScreenIntent.putExtra("elderId", elderId);
-                fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 int flags = PendingIntent.FLAG_UPDATE_CURRENT;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -74,13 +92,11 @@ public class MyMessagingService extends MessagingService {
                 }
 
                 PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(
-                        this,
-                        0,
-                        fullScreenIntent,
-                        flags
+                        this, 0, fullScreenIntent, flags
                 );
-                
-                android.util.Log.e("ALARM_DEBUG", "PendingIntent Created");
+
+                // Use a FIXED notification ID so duplicates just replace each other instead of stacking
+                int ALARM_NOTIFICATION_ID = 99999;
 
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(android.R.drawable.ic_dialog_alert)
@@ -92,12 +108,11 @@ public class MyMessagingService extends MessagingService {
                         .setAutoCancel(true)
                         .setOngoing(true);
 
-                notificationManager.notify((int) System.currentTimeMillis(), builder.build());
+                notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
                 android.util.Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent!");
                 
-                // FORCE THE ACTIVITY TO START IF SYSTEM_ALERT_WINDOW IS GRANTED
+                // FORCE the Activity to start directly (needs SYSTEM_ALERT_WINDOW permission)
                 try {
-                    fullScreenIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(fullScreenIntent);
                     android.util.Log.e("ALARM_DEBUG", "Forced startActivity called directly!");
                 } catch (Exception e) {
@@ -109,7 +124,9 @@ public class MyMessagingService extends MessagingService {
                 e.printStackTrace();
             }
         } else {
-            android.util.Log.e("ALARM_DEBUG", "Received normal push, skipping alarm logic.");
+            // For non-alarm messages (regular notifications), let Capacitor handle it normally
+            super.onMessageReceived(remoteMessage);
+            android.util.Log.e("ALARM_DEBUG", "Received normal push, passed to Capacitor.");
         }
     }
 }

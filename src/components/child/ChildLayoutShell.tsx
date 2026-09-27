@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   { name: "Tasks", href: "/child/tasks", icon: ListTodo },
   { name: "Reports", href: "/child/reports", icon: FileText },
   { name: "Documents", href: "/child/documents", icon: Files },
+    { name: "Care Team", href: "/child/team", icon: Users },
   { name: "Emergency Center", href: "/child/emergency", icon: AlertTriangle },
   { name: "Care Network", href: "/child/care-network", icon: Users },
   { name: "Settings", href: "/child/settings", icon: Settings },

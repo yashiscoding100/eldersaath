@@ -71,7 +71,7 @@ export default async function ChildReports({
       </header>
 
       {/* Printable Report Container */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-8 print:p-0 print:border-none print:shadow-none">
+      <div id="report-content" className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden p-8 print:p-0 print:border-none print:shadow-none">
         
         {/* Report Header */}
         <div className="border-b-2 border-slate-900 pb-6 mb-6">

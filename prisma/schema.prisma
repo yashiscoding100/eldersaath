@@ -21,6 +21,7 @@ model User {
   isBlocked     Boolean   @default(false)
   blockMessage  String?
   notifyVitals  Boolean   @default(true)
+  notifySnooze  Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

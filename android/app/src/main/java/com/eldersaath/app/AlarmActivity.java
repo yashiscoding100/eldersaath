@@ -40,6 +40,7 @@ public class AlarmActivity extends Activity {
         if (body == null) body = "Please check the notification for more details.";
 
         String snoozeText = getIntent().getStringExtra("snoozeText");
+        String elderId = getIntent().getStringExtra("elderId");
         if (snoozeText == null || snoozeText.isEmpty()) {
             snoozeText = "I'll take the medicines later";
         }
@@ -112,6 +113,7 @@ public class AlarmActivity extends Activity {
         final String finalLabel = label;
         final String finalBody = body;
         final String finalSnoozeText = snoozeText;
+        final String finalElderId = elderId;
         
         snoozeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -122,6 +124,29 @@ public class AlarmActivity extends Activity {
                 snoozeIntent.putExtra("label", finalLabel);
                 snoozeIntent.putExtra("body", finalBody);
                 snoozeIntent.putExtra("snoozeText", finalSnoozeText);
+                if (finalElderId != null) snoozeIntent.putExtra("elderId", finalElderId);
+                
+                if (finalElderId != null) {
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                java.net.URL url = new java.net.URL("https://eldersaath.vercel.app/api/alarms/snooze");
+                                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                                conn.setRequestMethod("POST");
+                                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                                conn.setDoOutput(true);
+                                String jsonInputString = "{\"elderId\": \"" + finalElderId + "\"}";
+                                java.io.OutputStream os = conn.getOutputStream();
+                                byte[] input = jsonInputString.getBytes("utf-8");
+                                os.write(input, 0, input.length);
+                                os.flush();
+                                os.close();
+                                conn.getResponseCode();
+                            } catch (Exception e) { e.printStackTrace(); }
+                        }
+                    }).start();
+                }
                 snoozeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 
                 int flags = PendingIntent.FLAG_UPDATE_CURRENT;

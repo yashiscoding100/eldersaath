@@ -9,10 +9,10 @@ export async function GET() {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { notifyVitals: true }
+      select: { notifyVitals: true, notifySnooze: true }
     })
 
-    return NextResponse.json({ notifyVitals: user?.notifyVitals ?? true })
+    return NextResponse.json({ notifyVitals: user?.notifyVitals ?? true, notifySnooze: user?.notifySnooze ?? true })
   } catch (error) {
     return new NextResponse("Internal Error", { status: 500 })
   }
@@ -23,11 +23,11 @@ export async function PATCH(req: Request) {
     const session = await auth()
     if (!session) return new NextResponse("Unauthorized", { status: 401 })
 
-    const { notifyVitals } = await req.json()
+    const { notifyVitals, notifySnooze } = await req.json()
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { notifyVitals }
+      data: { ...(notifyVitals !== undefined && {notifyVitals}), ...(notifySnooze !== undefined && {notifySnooze}) }
     })
 
     return NextResponse.json({ success: true })

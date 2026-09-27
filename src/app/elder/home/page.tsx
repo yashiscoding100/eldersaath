@@ -144,7 +144,7 @@ export default async function ElderHome() {
           </a>
         </div>
 
-        {/* Historical Health Trends */}
+        <a href="/elder/team" className="mt-6 block w-full bg-slate-800 text-white rounded-2xl p-6 text-left shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 flex items-center justify-between border border-slate-700"><div><h2 className="text-xl font-bold">Helpers &amp; Team</h2><p className="text-sm font-medium text-slate-300 mt-1">Call maids, nurses, and drivers</p></div><div className="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center text-xl">CALL</div></a>{/* Historical Health Trends */}
         <div className="w-full bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mt-6">
           <h2 className="text-lg font-bold text-slate-900 mb-4">My Health Trends</h2>
           <HealthCharts 

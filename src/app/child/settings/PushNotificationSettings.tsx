@@ -10,7 +10,7 @@ export function PushNotificationSettings() {
   const [settings, setSettings] = useState({
     sosAlerts: true,
     medicationReminders: true,
-    notifyVitals: true // Loaded from DB
+    notifyVitals: true, notifySnooze: true
   })
 
   // Load from local storage on mount
@@ -29,7 +29,7 @@ export function PushNotificationSettings() {
     fetch("/api/user/notifications")
       .then(res => res.json())
       .then(data => {
-        setSettings(s => ({ ...s, notifyVitals: data.notifyVitals }))
+        setSettings(s => ({ ...s, notifyVitals: data.notifyVitals, notifySnooze: data.notifySnooze }))
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -39,12 +39,12 @@ export function PushNotificationSettings() {
     const newValue = !settings[key]
     setSettings(s => ({ ...s, [key]: newValue }))
     
-    if (key === 'notifyVitals') {
+    if (key === 'notifyVitals' || key === 'notifySnooze') {
       try {
         await fetch("/api/user/notifications", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ notifyVitals: newValue })
+          body: JSON.stringify({ [key]: newValue })
         })
       } catch (e) {
         console.error("Failed to save to DB", e)
@@ -110,21 +110,22 @@ export function PushNotificationSettings() {
         </div>
 
         {/* Toggle Item */}
-        <div className="flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+        <div className={`flex items-center justify-between p-4 bg-white rounded-lg border border-slate-200 shadow-sm transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}>
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
               <Pill className="w-5 h-5 text-indigo-500" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-sm">Medication Reminders</p>
-              <p className="text-xs text-slate-500">Get notified when a dose is missed or scheduled.</p>
+              <p className="font-bold text-slate-900 text-sm">Medication Snoozes</p>
+              <p className="text-xs text-slate-500">Get notified when they snooze an alarm.</p>
             </div>
           </div>
           <button 
-            onClick={() => handleToggle('medicationReminders')}
-            className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${settings.medicationReminders ? 'bg-blue-600' : 'bg-slate-300'}`}
+            disabled={loading}
+            onClick={() => handleToggle('notifySnooze')}
+            className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${settings.notifySnooze ? 'bg-blue-600' : 'bg-slate-300'}`}
           >
-            <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${settings.medicationReminders ? 'translate-x-5' : 'translate-x-0'}`} />
+            <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${settings.notifySnooze ? 'translate-x-5' : 'translate-x-0'}`} />
           </button>
         </div>
 

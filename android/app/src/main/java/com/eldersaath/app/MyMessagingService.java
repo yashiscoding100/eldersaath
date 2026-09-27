@@ -28,6 +28,11 @@ public class MyMessagingService extends MessagingService {
             if (body == null) body = "If you don't want to take your medicine right now, snooze it and take it after 5 mins.";
 
             String snoozeText = remoteMessage.getData().get("snoozeText");
+            String snoozeDurationStr = remoteMessage.getData().get("snoozeDuration");
+            int snoozeDuration = 10;
+            if (snoozeDurationStr != null) {
+                try { snoozeDuration = Integer.parseInt(snoozeDurationStr); } catch (Exception ignored) {}
+            }
             String elderId = remoteMessage.getData().get("elderId");
             if (snoozeText == null) snoozeText = "I'll take the medicines later";
 
@@ -59,6 +64,7 @@ public class MyMessagingService extends MessagingService {
                 fullScreenIntent.putExtra("label", label);
                 fullScreenIntent.putExtra("body", body);
                 fullScreenIntent.putExtra("snoozeText", snoozeText);
+                fullScreenIntent.putExtra("snoozeDuration", snoozeDuration);
                 if (elderId != null) fullScreenIntent.putExtra("elderId", elderId);
                 fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 

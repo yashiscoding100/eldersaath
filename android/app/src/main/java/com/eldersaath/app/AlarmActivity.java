@@ -44,6 +44,7 @@ public class AlarmActivity extends Activity {
         if (body == null) body = "Please check the notification for more details.";
 
         String snoozeText = getIntent().getStringExtra("snoozeText");
+        int snoozeDuration = getIntent().getIntExtra("snoozeDuration", 10);
         String elderId = getIntent().getStringExtra("elderId");
         if (snoozeText == null || snoozeText.isEmpty()) {
             snoozeText = "I'll take the medicines later";
@@ -128,6 +129,7 @@ public class AlarmActivity extends Activity {
                 snoozeIntent.putExtra("label", finalLabel);
                 snoozeIntent.putExtra("body", finalBody);
                 snoozeIntent.putExtra("snoozeText", finalSnoozeText);
+                snoozeIntent.putExtra("snoozeDuration", snoozeDuration);
                 if (finalElderId != null) snoozeIntent.putExtra("elderId", finalElderId);
                 
                 if (finalElderId != null) {
@@ -166,7 +168,7 @@ public class AlarmActivity extends Activity {
                 );
                 
                 AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                long snoozeTime = System.currentTimeMillis() + (5 * 60 * 1000); // 5 mins later
+                long snoozeTime = System.currentTimeMillis() + (snoozeDuration * 60 * 1000L);
                 
                 try {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -174,11 +176,11 @@ public class AlarmActivity extends Activity {
                     } else {
                         alarmManager.setExact(AlarmManager.RTC_WAKEUP, snoozeTime, pendingIntent);
                     }
-                    Toast.makeText(AlarmActivity.this, "Snoozed! Waking you up again in 5 mins.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AlarmActivity.this, "Snoozed! Waking you up again in " + snoozeDuration + " mins.", Toast.LENGTH_LONG).show();
                 } catch (SecurityException e) {
                     // Fallback if EXACT alarm permission is denied
                     alarmManager.set(AlarmManager.RTC_WAKEUP, snoozeTime, pendingIntent);
-                    Toast.makeText(AlarmActivity.this, "Snoozed for 5 mins.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(AlarmActivity.this, "Snoozed for " + snoozeDuration + " mins.", Toast.LENGTH_LONG).show();
                 }
 
                 finish();

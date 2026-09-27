@@ -17,7 +17,8 @@ export function PrintButton() {
       // Generate canvas
       const canvas = await html2canvas(element, { 
         scale: 2, // Higher quality
-        useCORS: true
+        useCORS: true,
+        logging: false
       })
       
       const imgData = canvas.toDataURL("image/png")
@@ -28,12 +29,42 @@ export function PrintButton() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save("ElderSaath_Health_Report.pdf")
+      
+      // Check if we are running in an Android/iOS WebView via Capacitor
+      if (typeof window !== "undefined" && (window as any).Capacitor && (window as any).Capacitor.isNativePlatform()) {
+        try {
+          const { Capacitor } = await import('@capacitor/core')
+          const { Filesystem, Directory } = await import('@capacitor/filesystem')
+          const { Share } = await import('@capacitor/share')
 
+          const pdfBase64 = pdf.output('datauristring').split(',')[1]
+          const fileName = `Health_Report_${Date.now()}.pdf`
+          
+          // Write to native file system
+          const result = await Filesystem.writeFile({
+            path: fileName,
+            data: pdfBase64,
+            directory: Directory.Cache
+          })
+          
+          // Share or save natively
+          await Share.share({
+            title: 'Health Report',
+            url: result.uri,
+            dialogTitle: 'Save or Share PDF'
+          })
+        } catch (nativeErr) {
+          console.error("Native share failed:", nativeErr)
+          // Fallback to try standard save
+          pdf.save("ElderSaath_Health_Report.pdf")
+        }
+      } else {
+        // Standard Web Browser Download
+        pdf.save("ElderSaath_Health_Report.pdf")
+      }
     } catch (e) {
       console.error("Failed to generate PDF", e)
-      // Fallback to native print if JS PDF fails
-      window.print()
+      alert("Failed to generate PDF. Please try again.")
     } finally {
       setDownloading(false)
     }

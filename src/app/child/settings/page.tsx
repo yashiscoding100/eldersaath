@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { EditProfileForm } from "./EditProfileForm"
 import { PushNotificationSettings } from "./PushNotificationSettings"
 import { HealthParameterSettings } from "./HealthParameterSettings"
+import { ElderAlarmSettings } from "./ElderAlarmSettings"
 import { PushSubscriptionManager } from "@/components/PushSubscriptionManager"
 
 export default async function ChildSettings() {
@@ -40,6 +41,12 @@ export default async function ChildSettings() {
             elderId={relationship.elderId}
             elderName={relationship.elder.name || "Elder"}
             initialVitals={relationship.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"}
+          />
+          <ElderAlarmSettings 
+            elderId={relationship.elderId}
+            elderName={relationship.elder.name || "Elder"}
+            initialSnoozeText={relationship.elder.alarmSnoozeText || "Take later"}
+            initialSnoozeDuration={relationship.elder.alarmSnoozeDuration || 10}
           />
         )}
       </div>

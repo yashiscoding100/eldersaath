@@ -40,7 +40,7 @@ export async function GET(req: Request) {
           type: "ALARM", 
           label: `Time for ${med.name}`,
           body: `Dosage: ${med.dosage}. ${med.instructions || ''}`,
-          snoozeText: "I'll take the medicines later",
+          snoozeText: med.elder.alarmSnoozeText || "Take later", snoozeDuration: (med.elder.alarmSnoozeDuration || 10).toString(),
           elderId: med.elderId
         }).catch(e => console.error("Alarm push failed", e))
       }

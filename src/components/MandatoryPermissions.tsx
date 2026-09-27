@@ -43,6 +43,26 @@ export function MandatoryPermissions() {
     }
   }, [])
 
+  const handleButtonClick = async () => {
+    if (!Capacitor.isNativePlatform()) return
+
+    try {
+      let permStatus = await PushNotifications.checkPermissions()
+
+      if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions()
+      }
+
+      if (permStatus.receive !== 'granted') {
+        alert("To enable notifications:\n\n1. Open your phone's 'Settings' app\n2. Tap 'Apps'\n3. Find 'Elder Saath'\n4. Tap 'Notifications' and turn them ON\n\nOnce enabled, this screen will disappear automatically!")
+      } else {
+        setIsBlocked(false)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   if (!isBlocked) return null
 
   return (
@@ -58,10 +78,10 @@ export function MandatoryPermissions() {
       </p>
       
       <button 
-        onClick={checkAndRequestPermissions}
+        onClick={handleButtonClick}
         className="w-full max-w-xs bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-blue-500/30"
       >
-        I have enabled them
+        How to Enable
       </button>
 
       <p className="text-sm text-slate-500 mt-6">

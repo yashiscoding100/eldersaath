@@ -22,7 +22,6 @@ import {
 
 import { signOut } from "next-auth/react"
 import { NotificationBell } from "../NotificationBell"
-import { setActiveElderAction } from "@/app/child/actions"
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/child/dashboard", icon: LayoutDashboard },
@@ -130,16 +129,14 @@ export function ChildLayoutShell({
                 <div className="absolute left-0 mt-8 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-fade-in">
                   <p className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Switch Care Recipient</p>
                   {elders.map(elder => (
-                    <button 
-                      key={elder.id}
-                      onClick={async () => {
-                        await setActiveElderAction(elder.id);
-                      }}
+                    <a 
+                        key={elder.id}
+                        href={`/api/child/active-elder?elderId=${elder.id}&redirect=${encodeURIComponent(pathname)}`}
                       className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                     >
                       {elder.name}
                       {elder.id === activeElderId && <div className="w-2 h-2 rounded-full bg-blue-600"></div>}
-                    </button>
+                      </a>
                   ))}
                 </div>
               )}
@@ -239,16 +236,14 @@ export function ChildLayoutShell({
                     <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50 animate-fade-in">
                       <p className="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Switch Care Recipient</p>
                       {elders.map(elder => (
-                        <button 
-                          key={elder.id}
-                          onClick={async () => {
-                            await setActiveElderAction(elder.id);
-                          }}
+                        <a 
+                        key={elder.id}
+                        href={`/api/child/active-elder?elderId=${elder.id}&redirect=${encodeURIComponent(pathname)}`}
                           className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                         >
                           {elder.name}
                           {elder.id === activeElderId && <div className="w-2 h-2 rounded-full bg-blue-600"></div>}
-                        </button>
+                      </a>
                       ))}
                     </div>
                   )}

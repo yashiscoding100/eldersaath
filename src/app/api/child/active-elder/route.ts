@@ -1,9 +1,11 @@
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
-    const { elderId } = await req.json()
+    const { searchParams } = new URL(req.url)
+    const elderId = searchParams.get("elderId")
+    const redirectUrl = searchParams.get("redirect") || "/child/dashboard"
     
     if (elderId) {
       const cookieStore = await cookies()
@@ -16,7 +18,7 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.redirect(new URL(redirectUrl, req.url))
   } catch (error) {
     return NextResponse.json({ message: "Internal Error" }, { status: 500 })
   }

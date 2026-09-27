@@ -39,7 +39,9 @@ export function ChildLayoutShell({
   elderName = "Mom", 
   userName = "Family Member",
   parentCount = 0,
-  hasEmergency = false 
+  hasEmergency = false,
+  elders = [],
+  activeElderId = ""
 }: { 
   children: React.ReactNode, 
   elderName?: string, 

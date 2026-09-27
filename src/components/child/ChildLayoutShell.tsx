@@ -22,6 +22,7 @@ import {
 
 import { signOut } from "next-auth/react"
 import { NotificationBell } from "../NotificationBell"
+import { setActiveElderAction } from "@/app/child/actions"
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/child/dashboard", icon: LayoutDashboard },
@@ -132,8 +133,7 @@ export function ChildLayoutShell({
                     <button 
                       key={elder.id}
                       onClick={async () => {
-                        await fetch("/api/child/active-elder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ elderId: elder.id }) });
-                        window.location.reload();
+                        await setActiveElderAction(elder.id);
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                     >
@@ -242,8 +242,7 @@ export function ChildLayoutShell({
                         <button 
                           key={elder.id}
                           onClick={async () => {
-                            await fetch("/api/child/active-elder", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ elderId: elder.id }) });
-                            window.location.reload();
+                            await setActiveElderAction(elder.id);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                         >

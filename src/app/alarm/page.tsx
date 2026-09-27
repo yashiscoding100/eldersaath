@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { LocalNotifications } from "@capacitor/local-notifications"
 import { Capacitor } from "@capacitor/core"
 
-export default function AlarmPage() {
+import { Suspense } from "react"
+
+function AlarmContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
@@ -135,5 +137,13 @@ export default function AlarmPage() {
 
       </div>
     </div>
+  )
+}
+
+export default function AlarmPage() {
+  return (
+    <Suspense fallback={<div className="fixed inset-0 bg-red-600 flex items-center justify-center text-white text-3xl font-bold">LOADING ALARM...</div>}>
+      <AlarmContent />
+    </Suspense>
   )
 }

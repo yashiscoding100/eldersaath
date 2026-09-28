@@ -7,6 +7,7 @@ export async function GET(req: Request) {
   try {
     // Add the sosEnabled column manually to bypass the need for npx prisma db push
     await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "sosEnabled" BOOLEAN NOT NULL DEFAULT false;`)
+    await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "canManageMeds" BOOLEAN NOT NULL DEFAULT false;`)
     
     return NextResponse.json({ 
       success: true, 

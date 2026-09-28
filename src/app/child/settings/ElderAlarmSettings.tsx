@@ -10,18 +10,20 @@ export function ElderAlarmSettings({
   elderName,
   initialSnoozeText,
   initialSnoozeDuration,
-  initialSosEnabled
+  initialSosEnabled, initialCanManageMeds
 }: { 
   elderId: string, 
   elderName: string,
   initialSnoozeText: string,
   initialSnoozeDuration: number,
-  initialSosEnabled: boolean
+  initialSosEnabled: boolean,
+  initialCanManageMeds: boolean
 }) {
   const router = useRouter()
   const [snoozeText, setSnoozeText] = useState(initialSnoozeText)
   const [snoozeDuration, setSnoozeDuration] = useState(initialSnoozeDuration)
   const [sosEnabled, setSosEnabled] = useState(initialSosEnabled)
+  const [canManageMeds, setCanManageMeds] = useState(initialCanManageMeds)
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
@@ -30,7 +32,7 @@ export function ElderAlarmSettings({
       await fetch("/api/child/elder-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration, sosEnabled })
+        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration, sosEnabled, canManageMeds })
       })
       alert("Elder Settings saved!")
       router.refresh()
@@ -88,7 +90,21 @@ export function ElderAlarmSettings({
         </button>
       </div>
       
-      <div className="flex justify-end mt-4">
+      
+        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="pr-4">
+            <h4 className="font-bold text-slate-900 text-sm">Allow Elder to Manage Meds</h4>
+            <p className="text-sm text-slate-500 mt-1">Allows the elder to add or delete their own medicines.</p>
+          </div>
+          <button
+            onClick={() => setCanManageMeds(!canManageMeds)}
+            className={`w-12 h-6 rounded-full relative transition-colors ${canManageMeds ? "bg-emerald-500" : "bg-slate-300"}`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${canManageMeds ? "left-6" : "left-0.5"}`} />
+          </button>
+        </div>
+
+        <div className="flex justify-end mt-4">
         <button 
           onClick={handleSave} 
           disabled={saving}

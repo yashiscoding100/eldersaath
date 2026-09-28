@@ -49,6 +49,7 @@ export default async function ChildSettings() {
             initialSnoozeText={relationship.elder.alarmSnoozeText || "Take later"}
             initialSnoozeDuration={relationship.elder.alarmSnoozeDuration || 10}
             initialSosEnabled={relationship.elder.sosEnabled || false}
+            initialCanManageMeds={relationship.elder.canManageMeds || false}
           />
           </>
         )}

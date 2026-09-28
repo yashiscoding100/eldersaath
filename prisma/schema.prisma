@@ -23,6 +23,7 @@ model User {
   notifyVitals  Boolean   @default(true)
   notifySnooze  Boolean   @default(true)
     sosEnabled    Boolean   @default(false)
+  canManageMeds Boolean   @default(false)
   alarmSnoozeText String?   @default("Take later")
   alarmSnoozeDuration Int?  @default(10)
   createdAt     DateTime  @default(now())

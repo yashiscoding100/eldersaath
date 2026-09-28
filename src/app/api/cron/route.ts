@@ -22,14 +22,14 @@ export async function GET(req: Request) {
     // Get time in 'hh:mm a' format in IST (for Indian users) or local server time
     const istOptions: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true };
     const istTimeStr = new Intl.DateTimeFormat("en-US", istOptions).format(now);
-    const currentLocalTime = istTimeStr; // e.g. "08:00 AM"
+    const currentLocalTime = istTimeStr.replace(/\u202F/g, ' ').replace(/\s+/g, ' '); // Normalize spaces
     const istOptions24: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false };
     const currentHourMin = new Intl.DateTimeFormat("en-US", istOptions24).format(now); // 24h format fallback
 
     for (const med of allMeds) {
       // Very basic MVP time check
       // For example, if med.time is "08:00 AM" or "08:00"
-      const medTime = med.time.trim().toUpperCase()
+      const medTime = med.time.replace(/\u202F/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase()
       
       if (medTime === currentLocalTime.toUpperCase() || medTime === currentHourMin) {
         firedCount++
@@ -52,7 +52,7 @@ export async function GET(req: Request) {
 
     for (const task of allTasks) {
       if (!task.time) continue
-      const taskTime = task.time.trim().toUpperCase()
+      const taskTime = task.time.replace(/\u202F/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase()
       if (taskTime === currentLocalTime.toUpperCase() || taskTime === currentHourMin) {
         firedCount++
         if (task.triggerAlarm) {

@@ -22,6 +22,7 @@ export default function DailyCheckin() {
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [requiredVitals, setRequiredVitals] = useState<string[]>(["BP", "SUGAR", "SPO2", "PULSE", "TEMP", "WEIGHT"])
+  const [askSymptoms, setAskSymptoms] = useState(true)
   const [data, setData] = useState({
     feeling: "",
     sleep: "",
@@ -40,9 +41,13 @@ export default function DailyCheckin() {
   useEffect(() => {
     fetch("/api/elder/preferences")
       .then(res => res.json())
-      .then(resData => {
+            .then(resData => {
         if (resData.requiredVitals) {
           setRequiredVitals(resData.requiredVitals.split(","))
+        }
+        if (resData.askSymptoms === false) {
+          setAskSymptoms(false)
+          setStep(2)
         }
       })
       .catch(() => {})
@@ -50,7 +55,7 @@ export default function DailyCheckin() {
 
   const totalSteps = 6
   const handleNext = () => setStep((s) => Math.min(s + 1, totalSteps))
-  const handlePrev = () => setStep((s) => Math.max(s - 1, 1))
+  const handlePrev = () => setStep((s) => Math.max(s - 1, askSymptoms ? 1 : 2))
 
   const toggleSymptom = (symptom: string) => {
     if (symptom === "None") {
@@ -301,7 +306,7 @@ export default function DailyCheckin() {
 
       {/* Navigation buttons */}
       <div className="max-w-md mx-auto w-full pt-6 flex gap-4">
-        {step > 1 && (
+        {step > (askSymptoms ? 1 : 2) && (
           <button onClick={handlePrev} className="flex-1 py-4 bg-gray-200 text-gray-700 font-bold rounded-2xl text-xl">
             Back
           </button>

@@ -43,6 +43,7 @@ export default async function ChildSettings() {
             elderId={relationship.elderId}
             elderName={relationship.elder.name || "Elder"}
             initialVitals={relationship.elder.elderProfile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"}
+            initialAskSymptoms={relationship.elder.elderProfile?.askSymptoms ?? true}
           />
           <ElderAlarmSettings 
             elderId={relationship.elderId}

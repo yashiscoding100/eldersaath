@@ -6,7 +6,8 @@ import { Activity } from "lucide-react"
 type Props = {
   elderId: string
   elderName: string
-  initialVitals: string // e.g., "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
+  initialVitals: string
+  initialAskSymptoms?: boolean
 }
 
 const AVAILABLE_VITALS = [
@@ -18,7 +19,8 @@ const AVAILABLE_VITALS = [
   { id: "WEIGHT", label: "Weight" },
 ]
 
-export function HealthParameterSettings({ elderId, elderName, initialVitals }: Props) {
+export function HealthParameterSettings({ elderId, elderName, initialVitals, initialAskSymptoms = true }: Props) {
+  const [askSymptoms, setAskSymptoms] = useState(initialAskSymptoms)
   const [isOpen, setIsOpen] = useState(false)
   const [activeVitals, setActiveVitals] = useState<string[]>(initialVitals.split(","))
   const [loading, setLoading] = useState(false)
@@ -39,7 +41,7 @@ export function HealthParameterSettings({ elderId, elderName, initialVitals }: P
       const res = await fetch("/api/elder/preferences", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, requiredVitals: activeVitals.join(",") })
+        body: JSON.stringify({ elderId, requiredVitals: activeVitals.join(","), askSymptoms })
       })
 
       if (res.ok) {
@@ -132,6 +134,20 @@ export function HealthParameterSettings({ elderId, elderName, initialVitals }: P
               </button>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mb-6 p-4 bg-white border border-slate-200 rounded-xl max-w-xl">
+        <h4 className="font-bold text-slate-900 mb-1">Health Questionnaire</h4>
+        <p className="text-sm text-slate-500 mb-4">Ask the elder about symptoms (chest pain, dizziness, etc.) before taking vitals.</p>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setAskSymptoms(!askSymptoms)}
+            className={`w-14 h-7 rounded-full relative transition-colors ${askSymptoms ? 'bg-blue-600' : 'bg-slate-300'}`}
+          >
+            <div className={`w-6 h-6 bg-white rounded-full absolute top-0.5 transition-all ${askSymptoms ? 'left-7' : 'left-0.5'}`} />
+          </button>
+          <span className="text-sm font-bold text-slate-700">{askSymptoms ? "Enabled" : "Disabled"}</span>
         </div>
       </div>
 

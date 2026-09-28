@@ -10,7 +10,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { elderId, requiredVitals } = await req.json()
+    const { elderId, requiredVitals, askSymptoms } = await req.json()
 
     if (!elderId || typeof requiredVitals !== "string") {
       return NextResponse.json({ message: "Invalid payload" }, { status: 400 })
@@ -30,7 +30,7 @@ export async function PATCH(req: Request) {
     // Update or create elder profile with new requiredVitals
     const updatedProfile = await prisma.elderProfile.upsert({
       where: { userId: elderId },
-      update: { requiredVitals },
+      update: { requiredVitals, askSymptoms: askSymptoms !== undefined ? askSymptoms : true },
       create: {
         userId: elderId,
         requiredVitals
@@ -60,7 +60,8 @@ export async function GET(req: Request) {
     })
 
     return NextResponse.json({ 
-      requiredVitals: profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT"
+      requiredVitals: profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT",
+      askSymptoms: profile?.askSymptoms ?? true
     })
   } catch (error) {
     console.error("Error fetching preferences:", error)

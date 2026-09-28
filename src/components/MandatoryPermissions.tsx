@@ -1,108 +1,140 @@
-
 "use client"
 
 import { useEffect, useState } from "react"
-import { Capacitor } from "@capacitor/core"
+import { Capacitor, registerPlugin } from "@capacitor/core"
 import { PushNotifications } from "@capacitor/push-notifications"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Layers, Bell } from "lucide-react"
+
+// Bind the custom local plugin we wrote in Java
+const AppPermissions = registerPlugin("AppPermissions") as any
 
 export function MandatoryPermissions() {
-  const [isBlocked, setIsBlocked] = useState(false)
+  const [overlayGranted, setOverlayGranted] = useState(true)
+  const [pushGranted, setPushGranted] = useState(true)
+  const [checking, setChecking] = useState(true)
 
-  const checkAndRequestPermissions = async () => {
-    if (!Capacitor.isNativePlatform()) return
+  const checkPermissions = async () => {
+    if (!Capacitor.isNativePlatform()) {
+      setChecking(false)
+      return
+    }
 
     try {
-      let permStatus = await PushNotifications.checkPermissions()
+      // 1. Check Overlay
+      const overlayRes = await AppPermissions.checkOverlayPermission()
+      setOverlayGranted(overlayRes.granted)
 
-      if (permStatus.receive === "prompt") {
-        permStatus = await PushNotifications.requestPermissions()
-      }
+      // 2. Check Push
+      const pushRes = await PushNotifications.checkPermissions()
+      setPushGranted(pushRes.receive === "granted")
 
-      if (permStatus.receive !== "granted") {
-        setIsBlocked(true)
-      } else {
-        setIsBlocked(false)
-        // CRITICAL BUG FIX: If granted, we MUST register with FCM and Vercel globally!
+      // Sync FCM token if granted
+      if (pushRes.receive === "granted") {
         await PushNotifications.register()
       }
     } catch (e) {
-      console.error("Failed to check permissions", e)
+      console.error(e)
+    } finally {
+      setChecking(false)
     }
   }
 
   useEffect(() => {
-    
     if (Capacitor.isNativePlatform()) {
-      // Global Token Sync Listener
       PushNotifications.addListener("registration", async (token) => {
-         try {
-           await fetch("/api/push", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-               endpoint: "fcm:" + token.value,
-               keys: { p256dh: "fcm", auth: "fcm" }
-             })
-           })
-         } catch(e) { console.error("Failed to sync FCM token", e) }
+        try {
+          await fetch("/api/push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              endpoint: "fcm:" + token.value,
+              keys: { p256dh: "fcm", auth: "fcm" }
+            })
+          })
+        } catch(e) {}
       })
       
-      checkAndRequestPermissions()
+      checkPermissions()
 
+      // When user returns from Android Settings, re-check everything
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-          checkAndRequestPermissions()
+          checkPermissions()
         }
       })
     }
   }, [])
 
-  const handleButtonClick = async () => {
-    if (!Capacitor.isNativePlatform()) return
+  const handleRequestOverlay = async () => {
+    await AppPermissions.requestOverlayPermission()
+  }
 
+  const handleRequestPush = async () => {
     try {
       let permStatus = await PushNotifications.checkPermissions()
-
       if (permStatus.receive === "prompt") {
         permStatus = await PushNotifications.requestPermissions()
       }
-
       if (permStatus.receive !== "granted") {
-        alert("To enable notifications:\n\n1. Open your phone's 'Settings' app\n2. Tap 'Apps'\n3. Find 'Elder Saath'\n4. Tap 'Notifications' and turn them ON\n\nOnce enabled, this screen will disappear automatically!")
+        alert("To enable notifications:\\n\\n1. Open your phone's 'Settings' app\\n2. Tap 'Apps'\\n3. Find 'Elder Saath'\\n4. Tap 'Notifications' and turn them ON")
       } else {
-        setIsBlocked(false)
-        await PushNotifications.register()
+        await checkPermissions()
       }
     } catch (e) {
       console.error(e)
     }
   }
 
-  if (!isBlocked) return null
+  if (checking || (!Capacitor.isNativePlatform())) return null
+  if (overlayGranted && pushGranted) return null
 
   return (
     <div className="fixed inset-0 z-[9999] bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
-      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
-        <AlertTriangle className="w-12 h-12 text-red-600" />
-      </div>
-      <h1 className="text-3xl font-extrabold text-white mb-4 tracking-tight">Action Required</h1>
-      <p className="text-lg text-slate-300 mb-8 max-w-md">
-        This app uses critical life-saving SOS alerts and medical alarms to function. 
-        <br /><br />
-        You <strong>must</strong> allow notifications in your Android device settings to use this app.
-      </p>
-      
-      <button 
-        onClick={handleButtonClick}
-        className="w-full max-w-xs bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-blue-500/30"
-      >
-        How to Enable
-      </button>
+      <div className="w-full max-w-sm bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl">
+        <h1 className="text-2xl font-extrabold text-white mb-2">Setup Required</h1>
+        <p className="text-sm text-slate-400 mb-8">
+          To ensure life-saving SOS alerts and medical alarms can wake up your phone, we need two permissions.
+        </p>
 
-      <p className="text-sm text-slate-500 mt-6">
-        (Go to Settings &rarr; Apps &rarr; Elder Saath &rarr; Notifications)
-      </p>
+        <div className="space-y-4">
+          {/* Step 1: Overlay */}
+          <div className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${overlayGranted ? "bg-emerald-900/30 border-emerald-500/30 opacity-50" : "bg-slate-700 border-slate-600"}`}>
+            <div className={`p-3 rounded-full ${overlayGranted ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-400"}`}>
+              <Layers className="w-6 h-6" />
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="font-bold text-white">1. Screen Overlay</h3>
+              <p className="text-xs text-slate-400">Allow alarms to show full screen</p>
+            </div>
+            {!overlayGranted && (
+              <button onClick={handleRequestOverlay} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition">
+                Fix
+              </button>
+            )}
+            {overlayGranted && <span className="text-emerald-400 font-bold text-sm pr-2">Done</span>}
+          </div>
+
+          {/* Step 2: Push Notifications */}
+          <div className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${pushGranted ? "bg-emerald-900/30 border-emerald-500/30 opacity-50" : "bg-slate-700 border-slate-600"}`}>
+            <div className={`p-3 rounded-full ${pushGranted ? "bg-emerald-500/20 text-emerald-400" : "bg-blue-500/20 text-blue-400"}`}>
+              <Bell className="w-6 h-6" />
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="font-bold text-white">2. Notifications</h3>
+              <p className="text-xs text-slate-400">Receive SOS and Med Alerts</p>
+            </div>
+            {!pushGranted && overlayGranted && (
+              <button onClick={handleRequestPush} className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-sm transition">
+                Fix
+              </button>
+            )}
+            {!pushGranted && !overlayGranted && (
+              <span className="text-slate-500 text-xs font-bold pr-2">Wait</span>
+            )}
+            {pushGranted && <span className="text-emerald-400 font-bold text-sm pr-2">Done</span>}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -34,7 +34,8 @@ export async function GET(req: Request) {
       if (medTime === currentLocalTime.toUpperCase() || medTime === currentHourMin) {
         firedCount++
         await sendPushNotification(med.elderId, {
-          type: "ALARM", 
+          type: "ALARM",
+          actionText: "Take medicines",
           label: `Time for ${med.name}`,
           body: `Dosage: ${med.dosage}. ${med.instructions || ''}`,
           snoozeText: med.elder.alarmSnoozeText || "Take later", snoozeDuration: (med.elder.alarmSnoozeDuration || 10).toString(),
@@ -57,10 +58,11 @@ export async function GET(req: Request) {
         if (task.triggerAlarm) {
           // FIRE FULL-SCREEN NATIVE ALARM
           await sendPushNotification(task.elderId, {
-            type: "ALARM", 
+            type: "ALARM",
+            actionText: "Complete the task",
             label: `Task: ${task.title}`,
             body: task.description || 'Important task assigned for right now.',
-            snoozeText: task.elder.alarmSnoozeText || "Remind me later", 
+            snoozeText: task.elder.alarmSnoozeText || "Will complete the task later", 
             snoozeDuration: (task.elder.alarmSnoozeDuration || 10).toString(),
             elderId: task.elderId
           }).catch(e => console.error("Alarm push failed", e))

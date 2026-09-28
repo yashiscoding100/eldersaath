@@ -37,6 +37,9 @@ public class AlarmActivity extends Activity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
+        String actionText = getIntent().getStringExtra("actionText");
+        if (actionText == null || actionText.isEmpty()) actionText = "TAKE MEDICINE / STOP ALARM";
+
         String label = getIntent().getStringExtra("label");
         if (label == null) label = "EMERGENCY ALARM!";
         
@@ -83,7 +86,7 @@ public class AlarmActivity extends Activity {
         btnParams.setMargins(0, 0, 0, 40);
 
         Button stopBtn = new Button(this);
-        stopBtn.setText("TAKE MEDICINE / STOP ALARM");
+        stopBtn.setText(actionText.toUpperCase());
         stopBtn.setTextSize(18);
         stopBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         android.graphics.drawable.GradientDrawable stopBg = new android.graphics.drawable.GradientDrawable();
@@ -116,6 +119,7 @@ public class AlarmActivity extends Activity {
         snoozeBtn.setPadding(40, 40, 40, 40);
         snoozeBtn.setLayoutParams(btnParams);
 
+        final String finalActionText = actionText;
         final String finalLabel = label;
         final String finalBody = body;
         final String finalSnoozeText = snoozeText;
@@ -127,6 +131,7 @@ public class AlarmActivity extends Activity {
                 if (ringtone != null) ringtone.stop();
                 
                 Intent snoozeIntent = new Intent(AlarmActivity.this, AlarmActivity.class);
+                snoozeIntent.putExtra("actionText", finalActionText);
                 snoozeIntent.putExtra("label", finalLabel);
                 snoozeIntent.putExtra("body", finalBody);
                 snoozeIntent.putExtra("snoozeText", finalSnoozeText);

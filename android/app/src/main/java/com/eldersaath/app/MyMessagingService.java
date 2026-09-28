@@ -82,6 +82,7 @@ public class MyMessagingService extends MessagingService {
                 fullScreenIntent.putExtra("label", label);
                 fullScreenIntent.putExtra("body", body);
                 fullScreenIntent.putExtra("snoozeText", snoozeText);
+                fullScreenIntent.putExtra("actionText", actionText);
                 fullScreenIntent.putExtra("snoozeDuration", snoozeDuration);
                 if (elderId != null) fullScreenIntent.putExtra("elderId", elderId);
                 fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

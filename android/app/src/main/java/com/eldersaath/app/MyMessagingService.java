@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.RemoteMessage;
@@ -27,12 +29,12 @@ public class MyMessagingService extends MessagingService {
             // THROTTLE CHECK: Skip if we already fired an alarm in the last 10 seconds
             long now = System.currentTimeMillis();
             if (now - lastAlarmTime < ALARM_COOLDOWN_MS) {
-                android.util.Log.e("ALARM_DEBUG", "THROTTLED - Skipping duplicate alarm (fired " + (now - lastAlarmTime) + "ms ago)");
+                Log.e("ALARM_DEBUG", "THROTTLED - Skipping duplicate alarm (fired " + (now - lastAlarmTime) + "ms ago)");
                 return; // DO NOT call super, DO NOT fire another alarm
             }
             lastAlarmTime = now;
             
-            android.util.Log.e("ALARM_DEBUG", "FCM ALARM RECEIVED - PROCESSING (single fire)");
+            Log.e("ALARM_DEBUG", "FCM ALARM RECEIVED - PROCESSING (single fire)");
             
             // DO NOT call super.onMessageReceived() for ALARM type messages!
             // The parent Capacitor MessagingService re-dispatches the message and causes duplicates.
@@ -44,6 +46,7 @@ public class MyMessagingService extends MessagingService {
             if (body == null) body = "If you don't want to take your medicine right now, snooze it and take it after 5 mins.";
 
             String snoozeText = remoteMessage.getData().get("snoozeText");
+            String actionText = remoteMessage.getData().get("actionText");
             String snoozeDurationStr = remoteMessage.getData().get("snoozeDuration");
             int snoozeDuration = 10;
             if (snoozeDurationStr != null) {
@@ -51,6 +54,7 @@ public class MyMessagingService extends MessagingService {
             }
             String elderId = remoteMessage.getData().get("elderId");
             if (snoozeText == null) snoozeText = "I'll take the medicines later";
+            if (actionText == null) actionText = "TAKE MEDICINE / STOP ALARM";
 
             try {
                 // ACQUIRE WAKE LOCK TO FORCE CPU AWAKE
@@ -110,18 +114,18 @@ public class MyMessagingService extends MessagingService {
                         .setOngoing(true);
 
                 notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
-                android.util.Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent!");
+                Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent!");
                 
                 // FORCE the Activity to start directly (needs SYSTEM_ALERT_WINDOW permission)
                 try {
                     startActivity(fullScreenIntent);
-                    android.util.Log.e("ALARM_DEBUG", "Forced startActivity called directly!");
+                    Log.e("ALARM_DEBUG", "Forced startActivity called directly!");
                 } catch (Exception e) {
-                    android.util.Log.e("ALARM_DEBUG", "Could not force startActivity: " + e.getMessage());
+                    Log.e("ALARM_DEBUG", "Could not force startActivity: " + e.getMessage());
                 }
                 
             } catch (Exception e) {
-                android.util.Log.e("ALARM_DEBUG", "FATAL CRASH IN JAVA: " + e.getMessage());
+                Log.e("ALARM_DEBUG", "FATAL CRASH IN JAVA: " + e.getMessage());
                 e.printStackTrace();
             }
         } else {

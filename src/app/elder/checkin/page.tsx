@@ -47,15 +47,20 @@ export default function DailyCheckin() {
         }
         if (resData.askSymptoms === false) {
           setAskSymptoms(false)
-          setStep(2)
         }
       })
       .catch(() => {})
   }, [])
 
   const totalSteps = 6
-  const handleNext = () => setStep((s) => Math.min(s + 1, totalSteps))
-  const handlePrev = () => setStep((s) => Math.max(s - 1, askSymptoms ? 1 : 2))
+  const handleNext = () => setStep((s) => {
+    if (s === 4 && !askSymptoms) return 6;
+    return Math.min(s + 1, totalSteps);
+  })
+  const handlePrev = () => setStep((s) => {
+    if (s === 6 && !askSymptoms) return 4;
+    return Math.max(s - 1, 1);
+  })
 
   const toggleSymptom = (symptom: string) => {
     if (symptom === "None") {
@@ -270,7 +275,7 @@ export default function DailyCheckin() {
         )}
 
         {/* STEP 5: Symptoms */}
-        {step === 5 && (
+        {step === 5 && askSymptoms && (
           <div className="space-y-6 text-center">
             <h1 className="text-3xl font-bold text-gray-800">Any symptoms today?</h1>
             <p className="text-gray-500">Checking for these helps your family spot early warning signs of illness, heart issues, or stroke.</p>
@@ -306,7 +311,7 @@ export default function DailyCheckin() {
 
       {/* Navigation buttons */}
       <div className="max-w-md mx-auto w-full pt-6 flex gap-4">
-        {step > (askSymptoms ? 1 : 2) && (
+        {step > 1 && (
           <button onClick={handlePrev} className="flex-1 py-4 bg-gray-200 text-gray-700 font-bold rounded-2xl text-xl">
             Back
           </button>

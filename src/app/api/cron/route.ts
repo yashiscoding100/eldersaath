@@ -43,6 +43,37 @@ export async function GET(req: Request) {
       }
     }
     
+        // --- TASK ALARMS ---
+    const allTasks = await prisma.task.findMany({
+      where: { time: { not: null } },
+      include: { elder: true }
+    })
+
+    for (const task of allTasks) {
+      if (!task.time) continue
+      const taskTime = task.time.trim().toUpperCase()
+      if (taskTime === currentLocalTime.toUpperCase() || taskTime === currentHourMin) {
+        firedCount++
+        if (task.triggerAlarm) {
+          // FIRE FULL-SCREEN NATIVE ALARM
+          await sendPushNotification(task.elderId, {
+            type: "ALARM", 
+            label: `Task: ${task.title}`,
+            body: task.description || 'Important task assigned for right now.',
+            snoozeText: task.elder.alarmSnoozeText || "Remind me later", 
+            snoozeDuration: (task.elder.alarmSnoozeDuration || 10).toString(),
+            elderId: task.elderId
+          }).catch(e => console.error("Alarm push failed", e))
+        } else {
+          // NORMAL PUSH NOTIFICATION
+          await sendPushNotification(task.elderId, {
+            title: `Task Due: ${task.title}`,
+            body: task.description || 'It is time for your scheduled task.',
+            url: "/elder/tasks"
+          }).catch(e => console.error("Normal push failed", e))
+        }
+      }
+    }
     return NextResponse.json({ message: "Cron executed successfully", scheduled: firedCount }, { status: 200 })
   } catch (error) {
     console.error(error)

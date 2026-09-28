@@ -1,3 +1,4 @@
+import { convertTo12Hour } from '@/lib/timeUtils'
 "use client"
 
 import { useState } from "react"
@@ -9,6 +10,8 @@ export function ElderAddTaskForm() {
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
+  const [time, setTime] = useState("")
+  const [triggerAlarm, setTriggerAlarm] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,12 +23,14 @@ export function ElderAddTaskForm() {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description })
+        body: JSON.stringify({ title, description, time: convertTo12Hour(time), triggerAlarm })
       })
 
       if (res.ok) {
         setTitle("")
         setDescription("")
+        setTime("")
+        setTriggerAlarm(false)
         setIsOpen(false)
         router.refresh()
       }
@@ -77,6 +82,28 @@ export function ElderAddTaskForm() {
             placeholder="Any extra details..." 
             className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900"
           />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Time (Optional)</label>
+          <input 
+            type="time" 
+            value={time} 
+            onChange={e => setTime(e.target.value)} 
+            className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all text-slate-900 font-bold"
+          />
+        </div>
+        <div className="flex items-center gap-3 py-2">
+          <button
+            type="button"
+            onClick={() => setTriggerAlarm(!triggerAlarm)}
+            className={`w-14 h-7 rounded-full relative transition-colors ${triggerAlarm ? 'bg-red-500' : 'bg-slate-300'}`}
+          >
+            <div className={`w-6 h-6 bg-white rounded-full absolute top-0.5 transition-all ${triggerAlarm ? 'left-7' : 'left-0.5'}`} />
+          </button>
+          <div className="flex-1">
+            <p className="font-bold text-slate-900">Important Task Alarm</p>
+            <p className="text-sm text-slate-500">Rings loud full-screen alarm.</p>
+          </div>
         </div>
         <button 
           type="submit" 

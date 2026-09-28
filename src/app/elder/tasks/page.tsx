@@ -1,3 +1,4 @@
+import { Bell } from "lucide-react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
@@ -45,6 +46,15 @@ export default async function ElderTasks() {
             return (
               <div key={task.id} className={`p-6 rounded-2xl shadow-sm border flex items-center justify-between transition-colors ${isCompleted ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
                 <div>
+
+                    {(task as any).time && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-bold text-sm">
+                          {(task as any).time}
+                        </span>
+                        {(task as any).triggerAlarm && <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md"><Bell className="w-3 h-3" /> ALARM</span>}
+                      </div>
+                    )}
                   <h2 className={`text-2xl font-bold ${isCompleted ? 'text-green-800 line-through opacity-70' : 'text-gray-900'}`}>
                     {task.title}
                   </h2>

@@ -160,6 +160,8 @@ model Task {
   title       String
   description String?
   frequency   String  @default("DAILY")
+  time        String?
+  triggerAlarm Boolean @default(false)
 
   logs      TaskLog[]
   createdAt DateTime  @default(now())

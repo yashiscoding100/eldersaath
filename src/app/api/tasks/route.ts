@@ -12,7 +12,7 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json()
-    const { title, description, elderId } = data
+    const { title, description, elderId, time, triggerAlarm } = data
     let targetElderId = elderId
     
     // If elder is creating it for themselves

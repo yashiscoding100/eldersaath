@@ -3,6 +3,7 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveElder } from "@/lib/activeElder"
 import { redirect } from "next/navigation"
+import { Bell } from "lucide-react"
 
 export default async function ChildTasks() {
   const session = await auth()
@@ -54,6 +55,7 @@ export default async function ChildTasks() {
                 <tr>
                   <th className="p-4 px-6">Task Title</th>
                   <th className="p-4 px-6">Description</th>
+                  <th className="p-4 px-6">Time</th>
                   <th className="p-4 px-6">Frequency</th>
                 </tr>
               </thead>
@@ -62,7 +64,18 @@ export default async function ChildTasks() {
                   <tr key={task.id} className="hover:bg-slate-50 transition group">
                     <td className="p-4 px-6 font-bold text-slate-900">{task.title}</td>
                     <td className="p-4 px-6 text-slate-600">{task.description || "-"}</td>
-                    <td className="p-4 px-6 text-slate-500 uppercase tracking-wider text-xs font-semibold">{task.frequency}</td>
+                    
+                      <td className="p-4 px-6">
+                        {task.time ? (
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-purple-600">{task.time}</span>
+                            {task.triggerAlarm && <span className="flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded"><Bell className="w-3 h-3" /> ALARM</span>}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="p-4 px-6 text-slate-500 uppercase tracking-wider text-xs font-semibold">{task.frequency}</td>
                   </tr>
                 ))}
               </tbody>

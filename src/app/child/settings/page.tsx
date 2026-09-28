@@ -6,6 +6,7 @@ import { EditProfileForm } from "./EditProfileForm"
 import { PushNotificationSettings } from "./PushNotificationSettings"
 import { HealthParameterSettings } from "./HealthParameterSettings"
 import { ElderAlarmSettings } from "./ElderAlarmSettings"
+import { MedicalProfileCard } from "@/components/MedicalProfileCard"
 import { PushSubscriptionManager } from "@/components/PushSubscriptionManager"
 
 export default async function ChildSettings() {

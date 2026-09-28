@@ -47,6 +47,7 @@ export default function DailyCheckin() {
         }
         if (resData.askSymptoms === false) {
           setAskSymptoms(false)
+          setStep(4)
         }
       })
       .catch(() => {})
@@ -59,7 +60,7 @@ export default function DailyCheckin() {
   })
   const handlePrev = () => setStep((s) => {
     if (s === 6 && !askSymptoms) return 4;
-    return Math.max(s - 1, 1);
+    return Math.max(s - 1, askSymptoms ? 1 : 4);
   })
 
   const toggleSymptom = (symptom: string) => {
@@ -311,7 +312,7 @@ export default function DailyCheckin() {
 
       {/* Navigation buttons */}
       <div className="max-w-md mx-auto w-full pt-6 flex gap-4">
-        {step > 1 && (
+        {step > (askSymptoms ? 1 : 4) && (
           <button onClick={handlePrev} className="flex-1 py-4 bg-gray-200 text-gray-700 font-bold rounded-2xl text-xl">
             Back
           </button>

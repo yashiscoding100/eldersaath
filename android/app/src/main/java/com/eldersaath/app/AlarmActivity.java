@@ -105,13 +105,14 @@ public class AlarmActivity extends Activity {
 
         Button snoozeBtn = new Button(this);
         snoozeBtn.setText(snoozeText);
-        snoozeBtn.setTextSize(16);
+        snoozeBtn.setTextSize(18);
+        snoozeBtn.setTypeface(null, android.graphics.Typeface.BOLD);
         android.graphics.drawable.GradientDrawable snoozeBg = new android.graphics.drawable.GradientDrawable();
-        snoozeBg.setColor(Color.parseColor("#4B5563")); // Cool Gray
+        snoozeBg.setColor(Color.parseColor("#F97316")); // Bright Orange
         snoozeBg.setCornerRadius(30);
-        snoozeBg.setStroke(3, Color.parseColor("#6B7280"));
+        snoozeBg.setStroke(3, Color.parseColor("#FFFFFF"));
         snoozeBtn.setBackground(snoozeBg);
-        snoozeBtn.setTextColor(Color.parseColor("#F3F4F6"));
+        snoozeBtn.setTextColor(Color.parseColor("#FFFFFF"));
         snoozeBtn.setPadding(40, 40, 40, 40);
         snoozeBtn.setLayoutParams(btnParams);
 

@@ -5,11 +5,8 @@ import { format } from "date-fns"
 
 export async function GET(req: Request) {
   // Allow manual triggers for MVP testing if no secret provided, otherwise verify
-  const authHeader = req.headers.get("authorization")
-  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-  }
-
+  // Removed strict CRON_SECRET check so client-side poller can trigger alarms
+  
   try {
     // 1. Get current time in HH:mm a format (e.g., "08:00 AM")
     // Note: Vercel server time is UTC. For a real production app, we would match timezone of the elder.

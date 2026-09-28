@@ -1,3 +1,4 @@
+import { convertTo12Hour } from "@/lib/timeUtils"
 "use client"
 
 import { useState, useRef } from "react"
@@ -11,7 +12,7 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
     name: "",
     dosage: "",
     frequency: "Daily",
-    time: "08:00 AM",
+    time: "08:00",
     instructions: ""
   })
 
@@ -23,10 +24,10 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
       await fetch("/api/medications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, ...formData })
+        body: JSON.stringify({ elderId, ...formData, time: convertTo12Hour(formData.time) })
       })
       setIsOpen(false)
-      setFormData({ name: "", dosage: "", frequency: "Daily", time: "08:00 AM", instructions: "" })
+      setFormData({ name: "", dosage: "", frequency: "Daily", time: "08:00", instructions: "" })
       router.refresh()
     } catch (error) {
       console.error(error)

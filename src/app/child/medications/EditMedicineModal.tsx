@@ -1,3 +1,4 @@
+import { convertTo12Hour, convertTo24Hour } from "@/lib/timeUtils"
 "use client"
 
 import { useState } from "react"
@@ -21,7 +22,7 @@ export function EditMedicineModal({ med }: { med: Medication }) {
     name: med.name,
     dosage: med.dosage,
     frequency: med.frequency,
-    time: med.time,
+    time: convertTo24Hour(med.time),
     instructions: med.instructions || ""
   })
 
@@ -33,7 +34,7 @@ export function EditMedicineModal({ med }: { med: Medication }) {
       const res = await fetch("/api/medications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: med.id, ...formData })
+        body: JSON.stringify({ id: med.id, ...formData, time: convertTo12Hour(formData.time) })
       })
       if (!res.ok) throw new Error("Failed to update medication")
       setIsOpen(false)

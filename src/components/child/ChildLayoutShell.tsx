@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { name: "Dashboard", href: "/child/dashboard", icon: LayoutDashboard },
   { name: "Health Analytics", href: "/child/health", icon: Activity },
   { name: "Medications", href: "/child/medications", icon: Pill },
-  { name: "Tasks", href: "/child/tasks", icon: ListTodo },
+  { name: "Things to Do", href: "/child/tasks", icon: ListTodo },
   { name: "Reports", href: "/child/reports", icon: FileText },
   { name: "Documents", href: "/child/documents", icon: Files },
     { name: "Care Team", href: "/child/team", icon: Users },

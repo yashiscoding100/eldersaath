@@ -12,6 +12,7 @@ export function ElderAddTaskForm() {
   const [description, setDescription] = useState("")
   const [time, setTime] = useState("")
   const [triggerAlarm, setTriggerAlarm] = useState(false)
+  const [frequency, setFrequency] = useState("DAILY")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,7 +24,7 @@ export function ElderAddTaskForm() {
       const res = await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, description, time: convertTo12Hour(time), triggerAlarm })
+        body: JSON.stringify({ title, description, time: convertTo12Hour(time), triggerAlarm, frequency })
       })
 
       if (res.ok) {
@@ -31,6 +32,7 @@ export function ElderAddTaskForm() {
         setDescription("")
         setTime("")
         setTriggerAlarm(false)
+      setFrequency("DAILY")
         setIsOpen(false)
         router.refresh()
       }
@@ -48,7 +50,7 @@ export function ElderAddTaskForm() {
         className="w-full mb-6 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-3 rounded-2xl flex items-center justify-center gap-2 transition"
       >
         <Plus className="w-5 h-5" />
-        Add a Personal Task
+        Add something to do
       </button>
     )
   }
@@ -56,14 +58,14 @@ export function ElderAddTaskForm() {
   return (
     <div className="w-full mb-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm animate-fade-in">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-slate-900">Add a New Task</h3>
+        <h3 className="font-bold text-slate-900">Add a New Thing to Do</h3>
         <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-slate-600">
           Cancel
         </button>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Task Title</label>
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Title</label>
           <input 
             type="text" 
             required 
@@ -101,7 +103,7 @@ export function ElderAddTaskForm() {
             <div className={`w-6 h-6 bg-white rounded-full absolute top-0.5 transition-all ${triggerAlarm ? 'left-7' : 'left-0.5'}`} />
           </button>
           <div className="flex-1">
-            <p className="font-bold text-slate-900">Important Task Alarm</p>
+            <p className="font-bold text-slate-900">Important Alarm</p>
             <p className="text-sm text-slate-500">Rings loud full-screen alarm.</p>
           </div>
         </div>
@@ -110,7 +112,7 @@ export function ElderAddTaskForm() {
           disabled={loading || !title} 
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Task"}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save"}
         </button>
       </form>
     </div>

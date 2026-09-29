@@ -3,8 +3,11 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { ElderAddTaskForm } from "./ElderAddTaskForm"
+import { DeleteTaskButton } from "@/app/child/tasks/DeleteTaskButton"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
-export default async function ElderTasks() {
+export default async function ElderThingsToDo() {
   const session = await auth()
 
   if (!session || session.user.role !== "ELDER") {
@@ -26,9 +29,12 @@ export default async function ElderTasks() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
-      <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm mb-6 text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900">Your Wellbeing</h1>
-        <p className="text-gray-500 mt-2">Gentle reminders & care notes for you</p>
+      <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm mb-6 text-center relative">
+        <Link href="/elder/home" className="absolute left-4 top-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+          <ArrowLeft className="w-6 h-6 text-slate-700" />
+        </Link>
+        <h1 className="text-3xl font-extrabold text-gray-900">Things to Do</h1>
+        <p className="text-gray-500 mt-2">Here are the things you need to do today.</p>
       </div>
       
       <div className="w-full max-w-md">

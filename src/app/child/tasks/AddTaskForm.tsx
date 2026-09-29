@@ -12,6 +12,7 @@ export function AddTaskForm({ elderId }: { elderId: string }) {
   const [description, setDescription] = useState("")
   const [time, setTime] = useState("")
   const [triggerAlarm, setTriggerAlarm] = useState(false)
+  const [frequency, setFrequency] = useState("DAILY")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,13 +22,14 @@ export function AddTaskForm({ elderId }: { elderId: string }) {
       await fetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, title, description, time: convertTo12Hour(time), triggerAlarm })
+        body: JSON.stringify({ elderId, title, description, time: convertTo12Hour(time), triggerAlarm, frequency })
       })
       setIsOpen(false)
       setTitle("")
       setDescription("")
       setTime("")
       setTriggerAlarm(false)
+      setFrequency("DAILY")
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -43,7 +45,7 @@ export function AddTaskForm({ elderId }: { elderId: string }) {
         className="w-full bg-purple-50 p-4 rounded-lg hover:bg-purple-100 transition block text-left"
       >
         <p className="text-sm text-purple-500">Tasks</p>
-        <p className="font-bold text-purple-700">+ Add Task →</p>
+        <p className="font-bold text-purple-700">+ Add Thing to Do →</p>
       </button>
     )
   }

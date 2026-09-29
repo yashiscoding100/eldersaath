@@ -1,36 +1,53 @@
-import { NextResponse } from "next/server"
+﻿import os
+
+content = '''import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { sendPushNotification } from "@/lib/push"
 
 export async function POST(req: Request) {
   const session = await auth()
-  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+  }
 
   try {
     const data = await req.json()
     const { title, description, elderId, time, triggerAlarm, frequency } = data
     let targetElderId = elderId
     
+    // If elder is creating it for themselves
     if (session.user.role === "ELDER") {
       targetElderId = session.user.id
     } else if (session.user.role === "CHILD") {
       const relationship = await prisma.caregiverRelationship.findUnique({
         where: { elderId_childId: { elderId: targetElderId, childId: session.user.id } }
       })
-      if (!relationship || relationship.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized for this elder" }, { status: 403 })
+      if (!relationship || relationship.status !== "ACTIVE") {
+         return NextResponse.json({ message: "Unauthorized for this elder" }, { status: 403 })
+      }
     } else {
       return NextResponse.json({ message: "Unauthorized role" }, { status: 401 })
     }
 
     const task = await prisma.task.create({
-      data: { elderId: targetElderId, assignerId: session.user.id, title, description, time, triggerAlarm: triggerAlarm === true, frequency: frequency || "DAILY" }
+      data: {
+        elderId: targetElderId,
+        assignerId: session.user.id,
+        title,
+        description,
+        time,
+        triggerAlarm: triggerAlarm === true,
+        frequency: frequency || "DAILY"
+      }
     })
     
+    // Send push notification to the Elder if a Caretaker assigned this task
     if (session.user.role === "CHILD") {
       await sendPushNotification(targetElderId, {
         title: "New Thing to Do",
-        body: session.user.name + " added a new thing to do: " + title,
+        body: ${session.user.name} added a new thing to do: ,
         url: "/elder/home"
       })
     }
@@ -67,4 +84,7 @@ export async function DELETE(req: Request) {
   } catch (e) {
     return NextResponse.json({ message: "Failed to delete" }, { status: 500 })
   }
-}
+}'''
+
+with open('src/app/api/tasks/route.ts', 'w', encoding='utf-8') as f:
+    f.write(content)

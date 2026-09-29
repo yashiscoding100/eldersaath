@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma"
 import { getActiveElder } from "@/lib/activeElder"
 import { redirect } from "next/navigation"
 import { Bell } from "lucide-react"
+import { DeleteTaskButton } from "./DeleteTaskButton"
 
-export default async function ChildTasks() {
+export default async function ChildThingsToDo() {
   const session = await auth()
   
   if (!session || session.user.role !== "CHILD") {
@@ -32,7 +33,7 @@ export default async function ChildTasks() {
       <header className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Care Tasks</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage reminders and tasks for {relationship.elder.name}</p>
+          <p className="text-sm text-slate-500 mt-1">Manage reminders and things to do for {relationship.elder.name}</p>
         </div>
         <div className="flex gap-4 items-center">
           <AddTaskForm elderId={relationship.elderId} />
@@ -46,17 +47,18 @@ export default async function ChildTasks() {
               <span className="text-2xl">📋</span>
             </div>
             <h3 className="text-lg font-bold text-slate-900">No active tasks</h3>
-            <p className="text-slate-500 text-sm mt-1 max-w-sm">Create daily reminders for water, exercise, or check-ins.</p>
+            <p className="text-slate-500 text-sm mt-1 max-w-sm">Add a new thing to do to get started.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm whitespace-nowrap">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold text-xs">
                 <tr>
-                  <th className="p-4 px-6">Task Title</th>
+                  <th className="p-4 px-6">Title</th>
                   <th className="p-4 px-6">Description</th>
                   <th className="p-4 px-6">Time</th>
                   <th className="p-4 px-6">Frequency</th>
+                  <th className="p-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -76,6 +78,7 @@ export default async function ChildTasks() {
                         )}
                       </td>
                       <td className="p-4 px-6 text-slate-500 uppercase tracking-wider text-xs font-semibold">{task.frequency}</td>
+                      <td className="p-4 px-6 text-right"><DeleteTaskButton id={task.id} /></td>
                   </tr>
                 ))}
               </tbody>

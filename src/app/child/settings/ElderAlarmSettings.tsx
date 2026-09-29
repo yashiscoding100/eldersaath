@@ -10,20 +10,22 @@ export function ElderAlarmSettings({
   elderName,
   initialSnoozeText,
   initialSnoozeDuration,
-  initialSosEnabled, initialCanManageMeds
+  initialSosEnabled, initialCanManageMeds, initialStickyAlarmNotification
 }: { 
   elderId: string, 
   elderName: string,
   initialSnoozeText: string,
   initialSnoozeDuration: number,
   initialSosEnabled: boolean,
-  initialCanManageMeds: boolean
+  initialCanManageMeds: boolean,
+  initialStickyAlarmNotification?: boolean
 }) {
   const router = useRouter()
   const [snoozeText, setSnoozeText] = useState(initialSnoozeText)
   const [snoozeDuration, setSnoozeDuration] = useState(initialSnoozeDuration)
   const [sosEnabled, setSosEnabled] = useState(initialSosEnabled)
   const [canManageMeds, setCanManageMeds] = useState(initialCanManageMeds)
+  const [stickyAlarmNotification, setStickyAlarmNotification] = useState(initialStickyAlarmNotification ?? true)
   const [saving, setSaving] = useState(false)
 
   const handleSave = async () => {
@@ -32,7 +34,7 @@ export function ElderAlarmSettings({
       await fetch("/api/child/elder-settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration, sosEnabled, canManageMeds })
+        body: JSON.stringify({ elderId, alarmSnoozeText: snoozeText, alarmSnoozeDuration: snoozeDuration, sosEnabled, canManageMeds, stickyAlarmNotification })
       })
       alert("Elder Settings saved!")
       router.refresh()
@@ -101,6 +103,19 @@ export function ElderAlarmSettings({
             className={`w-12 h-6 rounded-full relative transition-colors ${canManageMeds ? "bg-emerald-500" : "bg-slate-300"}`}
           >
             <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-all ${canManageMeds ? "left-6" : "left-0.5"}`} />
+          </button>
+        </div>
+        
+        <div className="pt-4 mt-2 border-t border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="font-bold text-slate-700 text-sm">Sticky Alarm Notification</p>
+            <p className="text-xs text-slate-500">Show a persistent tray notification during full-screen alarms.</p>
+          </div>
+          <button 
+            onClick={() => setStickyAlarmNotification(!stickyAlarmNotification)}
+            className={`w-12 h-6 rounded-full relative transition-colors ${stickyAlarmNotification ? 'bg-blue-600' : 'bg-slate-300'}`}
+          >
+            <span className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${stickyAlarmNotification ? 'translate-x-6' : 'translate-x-0'}`} />
           </button>
         </div>
 

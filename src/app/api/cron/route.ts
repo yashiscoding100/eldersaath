@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     
     // We fetch ALL medications and filter in JS to avoid timezone/format DB parsing nightmares in MVP
     const allMeds = await prisma.medication.findMany({
-      include: { elder: true }
+      include: { elder: { include: { elderProfile: true } } }
     })
     
     let firedCount = 0
@@ -39,7 +39,8 @@ export async function GET(req: Request) {
           label: `Time for ${med.name}`,
           body: `Dosage: ${med.dosage}. ${med.instructions || ''}`,
           snoozeText: med.elder.alarmSnoozeText || "Take later", snoozeDuration: (med.elder.alarmSnoozeDuration || 10).toString(),
-          elderId: med.elderId
+          elderId: med.elderId,
+          stickyNotification: med.elder.elderProfile?.stickyAlarmNotification !== false ? "true" : "false"
         }).catch(e => console.error("Alarm push failed", e))
       }
     }
@@ -47,7 +48,7 @@ export async function GET(req: Request) {
         // --- TASK ALARMS ---
     const allTasks = await prisma.task.findMany({
       where: { time: { not: null } },
-      include: { elder: true }
+      include: { elder: { include: { elderProfile: true } } }
     })
 
     for (const task of allTasks) {
@@ -64,7 +65,8 @@ export async function GET(req: Request) {
             body: task.description || 'Important task assigned for right now.',
             snoozeText: task.elder.alarmSnoozeText || "Will complete the task later", 
             snoozeDuration: (task.elder.alarmSnoozeDuration || 10).toString(),
-            elderId: task.elderId
+            elderId: task.elderId,
+              stickyNotification: task.elder.elderProfile?.stickyAlarmNotification !== false ? "true" : "false"
           }).catch(e => console.error("Alarm push failed", e))
         } else {
           // NORMAL PUSH NOTIFICATION

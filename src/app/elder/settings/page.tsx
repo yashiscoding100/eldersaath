@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { ScheduleSettings } from "./ScheduleSettings"
 import { EditProfileForm } from "@/app/child/settings/EditProfileForm"
 import { ElderPushSettings } from "./ElderPushSettings"
+import { ElderAlarmPreferences } from "./ElderAlarmPreferences"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
@@ -37,6 +38,7 @@ export default async function ElderSettings() {
             initialEmail={session.user.email || ""} 
           />
           <ElderPushSettings />
+          <ElderAlarmPreferences initialSticky={profile?.stickyAlarmNotification ?? true} />
           <div className="p-6">
             <h4 className="font-bold text-slate-900 mb-4">Vitals Check Schedule</h4>
             <ScheduleSettings 

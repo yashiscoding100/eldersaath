@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
@@ -15,6 +15,7 @@ export async function GET(req: Request) {
 
     // Add ElderProfile column
     await prisma.$executeRawUnsafe(`ALTER TABLE "ElderProfile" ADD COLUMN IF NOT EXISTS "askSymptoms" BOOLEAN NOT NULL DEFAULT true;`)
+    await prisma.$executeRawUnsafe(`ALTER TABLE "ElderProfile" ADD COLUMN IF NOT EXISTS "stickyAlarmNotification" BOOLEAN NOT NULL DEFAULT true;`)
 
     return NextResponse.json({ 
       success: true, 

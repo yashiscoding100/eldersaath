@@ -103,18 +103,31 @@ public class MyMessagingService extends MessagingService {
                 // Use a FIXED notification ID so duplicates just replace each other instead of stacking
                 int ALARM_NOTIFICATION_ID = 99999;
 
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                        .setContentTitle("EMERGENCY")
-                        .setContentText(label)
-                        .setPriority(NotificationCompat.PRIORITY_MAX)
-                        .setCategory(NotificationCompat.CATEGORY_ALARM)
-                        .setFullScreenIntent(fullScreenPendingIntent, true)
-                        .setAutoCancel(true)
-                        .setOngoing(true);
+                // Check if user requested sticky notification
+                boolean showSticky = true;
+                if (remoteMessage.getData().containsKey("stickyNotification")) {
+                    String stickyVal = remoteMessage.getData().get("stickyNotification");
+                    if ("false".equals(stickyVal)) {
+                        showSticky = false;
+                    }
+                }
 
-                notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
-                Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent!");
+                if (showSticky) {
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                            .setContentTitle(remoteMessage.getData().containsKey("actionText") ? remoteMessage.getData().get("actionText") : "ALARM")
+                            .setContentText(label)
+                            .setPriority(NotificationCompat.PRIORITY_MAX)
+                            .setCategory(NotificationCompat.CATEGORY_ALARM)
+                            .setFullScreenIntent(fullScreenPendingIntent, true)
+                            .setAutoCancel(true)
+                            .setOngoing(true);
+
+                    notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
+                    Log.e("ALARM_DEBUG", "Sticky Notification Fired with FullScreenIntent!");
+                } else {
+                    Log.e("ALARM_DEBUG", "Sticky Notification Skipped by User Preference!");
+                }
                 
                 // FORCE the Activity to start directly (needs SYSTEM_ALERT_WINDOW permission)
                 try {

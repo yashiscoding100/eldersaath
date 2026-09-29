@@ -1,7 +1,9 @@
-﻿import { NextResponse } from "next/server"
-import { auth } from "@/auth"
-import { prisma } from "@/lib/prisma"
+﻿import re
 
+with open('src/app/api/elder/preferences/route.ts', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+replacement = '''
 export async function PATCH(req: Request) {
   try {
     const session = await auth()
@@ -23,6 +25,7 @@ export async function PATCH(req: Request) {
       if (!relationship) return NextResponse.json({ message: "Unauthorized for this elder" }, { status: 403 })
     }
 
+    // Prepare update data dynamically based on what was passed
     const updateData: any = {}
     if (body.requiredVitals !== undefined) updateData.requiredVitals = body.requiredVitals
     if (body.askSymptoms !== undefined) updateData.askSymptoms = body.askSymptoms
@@ -40,31 +43,8 @@ export async function PATCH(req: Request) {
     })
 
     return NextResponse.json({ message: "Preferences updated", profile: updatedProfile })
-  } catch (error) {
-    console.error("Error updating preferences:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
-  }
-}
+'''
 
-export async function GET(req: Request) {
-  try {
-    const session = await auth()
-    
-    if (!session || !session.user.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-    }
-
-    const profile = await prisma.elderProfile.findUnique({
-      where: { userId: session.user.id }
-    })
-
-    return NextResponse.json({ 
-      requiredVitals: profile?.requiredVitals || "BP,SUGAR,SPO2,PULSE,TEMP,WEIGHT",
-      askSymptoms: profile?.askSymptoms ?? true,
-      stickyAlarmNotification: profile?.stickyAlarmNotification ?? true
-    })
-  } catch (error) {
-    console.error("Error fetching preferences:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
-  }
-}
+content = re.sub(r'export async function PATCH\(req: Request\) \{.*?return NextResponse\.json\(\{ \n      message: "Preferences updated successfully",\n      profile: updatedProfile\n    \}\)\n', replacement, content, flags=re.DOTALL)
+with open('src/app/api/elder/preferences/route.ts', 'w', encoding='utf-8') as f:
+    f.write(content)

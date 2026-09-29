@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { elderId, alarmSnoozeText, alarmSnoozeDuration, sosEnabled, canManageMeds } = await req.json()
+    const { elderId, alarmSnoozeText, alarmSnoozeDuration, sosEnabled, canManageMeds, stickyAlarmNotification } = await req.json()
     
     // Ensure the child has access to this elder
     const rel = await prisma.caregiverRelationship.findFirst({
@@ -28,6 +28,14 @@ export async function POST(req: Request) {
         canManageMeds
       }
     })
+
+    if (stickyAlarmNotification !== undefined) {
+      await prisma.elderProfile.upsert({
+        where: { userId: elderId },
+        update: { stickyAlarmNotification },
+        create: { userId: elderId, stickyAlarmNotification }
+      })
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -12,7 +12,7 @@ export function AddTaskForm({ elderId }: { elderId: string }) {
   const [description, setDescription] = useState("")
   const [time, setTime] = useState("")
   const [triggerAlarm, setTriggerAlarm] = useState(false)
-  const [frequency, setFrequency] = useState("DAILY")
+  const [frequency, setFrequency] = useState("0,1,2,3,4,5,6")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +29,7 @@ export function AddTaskForm({ elderId }: { elderId: string }) {
       setDescription("")
       setTime("")
       setTriggerAlarm(false)
-      setFrequency("DAILY")
+      setFrequency("0,1,2,3,4,5,6")
       router.refresh()
     } catch (error) {
       console.error(error)

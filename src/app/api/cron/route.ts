@@ -62,6 +62,12 @@ export async function GET(req: Request) {
 
     for (const task of allTasks) {
       if (!task.time) continue
+      
+      let taskFreq = task.frequency;
+      if (!taskFreq || taskFreq.toUpperCase() === "DAILY" || taskFreq.toUpperCase() === "WEEKLY" || taskFreq.toUpperCase() === "MONTHLY" || taskFreq.toUpperCase() === "ONCE") {
+        taskFreq = "0,1,2,3,4,5,6";
+      }
+      if (!taskFreq.includes(istDayStr)) continue;
       const taskTime = task.time.replace(/\u202F/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase()
       if (taskTime === currentLocalTime.toUpperCase() || taskTime === currentHourMin) {
         firedCount++

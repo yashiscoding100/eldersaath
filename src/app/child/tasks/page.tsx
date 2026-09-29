@@ -16,7 +16,17 @@ export default async function ChildThingsToDo() {
   const relationship = await getActiveElder(session.user.id)
 
   if (!relationship) {
-    return (
+  
+  const formatFreq = (f: string) => {
+    if (!f || f.toUpperCase() === "DAILY" || f === "0,1,2,3,4,5,6") return "Every Day";
+    if (f.toUpperCase() === "WEEKLY") return "Weekly";
+    if (f.toUpperCase() === "MONTHLY") return "Monthly";
+    if (f.toUpperCase() === "ONCE") return "Once";
+    const map: any = { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" };
+    return f.split(",").map(d => map[d.trim()]).filter(Boolean).join(", ");
+  }
+
+  return (
       <div className="min-h-screen p-6 flex justify-center items-center">
         <p className="text-gray-500">Please link an elder account first.</p>
       </div>
@@ -27,6 +37,16 @@ export default async function ChildThingsToDo() {
     where: { elderId: relationship.elderId },
     orderBy: { createdAt: 'desc' }
   })
+
+
+  const formatFreq = (f: string) => {
+    if (!f || f.toUpperCase() === "DAILY" || f === "0,1,2,3,4,5,6") return "Every Day";
+    if (f.toUpperCase() === "WEEKLY") return "Weekly";
+    if (f.toUpperCase() === "MONTHLY") return "Monthly";
+    if (f.toUpperCase() === "ONCE") return "Once";
+    const map: any = { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" };
+    return f.split(",").map(d => map[d.trim()]).filter(Boolean).join(", ");
+  }
 
   return (
     <div className="space-y-6">
@@ -77,7 +97,7 @@ export default async function ChildThingsToDo() {
                           <span className="text-slate-400">-</span>
                         )}
                       </td>
-                      <td className="p-4 px-6 text-slate-500 uppercase tracking-wider text-xs font-semibold">{task.frequency}</td>
+                      <td className="p-4 px-6 text-slate-500 uppercase tracking-wider text-xs font-semibold">{formatFreq(task.frequency)}</td>
                       <td className="p-4 px-6 text-right"><DeleteTaskButton id={task.id} /></td>
                   </tr>
                 ))}

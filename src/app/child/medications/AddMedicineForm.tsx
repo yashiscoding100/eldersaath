@@ -11,7 +11,7 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
   const [formData, setFormData] = useState({
     name: "",
     dosage: "",
-    frequency: "Daily",
+    frequency: "0,1,2,3,4,5,6",
     time: "08:00",
     instructions: ""
   })
@@ -27,7 +27,7 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
         body: JSON.stringify({ elderId, ...formData, time: convertTo12Hour(formData.time) })
       })
       setIsOpen(false)
-      setFormData({ name: "", dosage: "", frequency: "Daily", time: "08:00", instructions: "" })
+      setFormData({ name: "", dosage: "", frequency: "0,1,2,3,4,5,6", time: "08:00", instructions: "" })
       router.refresh()
     } catch (error) {
       console.error(error)
@@ -69,6 +69,40 @@ export function AddMedicineForm({ elderId }: { elderId: string }) {
               <input required type="time" className="text-gray-900 font-bold w-full border-2 border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} />
             </div>
           </div>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-bold text-slate-700 mb-2">Days of the Week</label>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { val: "1", label: "Mon" },
+                { val: "2", label: "Tue" },
+                { val: "3", label: "Wed" },
+                { val: "4", label: "Thu" },
+                { val: "5", label: "Fri" },
+                { val: "6", label: "Sat" },
+                { val: "0", label: "Sun" },
+              ].map(day => {
+                const isSelected = formData.frequency.includes(day.val);
+                return (
+                  <button
+                    key={day.val}
+                    type="button"
+                    onClick={() => {
+                      let arr = formData.frequency ? formData.frequency.split(',').filter(d => d) : [];
+                      if (isSelected) arr = arr.filter(d => d !== day.val);
+                      else arr.push(day.val);
+                      setFormData({...formData, frequency: arr.join(',')});
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm font-bold transition ${isSelected ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
+                  >
+                    {day.label}
+                  </button>
+                )
+              })}
+            </div>
+            {formData.frequency.length === 0 && <p className="text-xs text-red-500 mt-1">Please select at least one day.</p>}
+          </div>
+
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-1">Instructions (Optional)</label>
             <input type="text" placeholder="e.g. After meals" className="text-gray-900 font-bold w-full border-2 border-slate-200 p-2.5 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition" value={formData.instructions} onChange={e => setFormData({...formData, instructions: e.target.value})} />

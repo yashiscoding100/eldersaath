@@ -23,12 +23,21 @@ export async function GET(req: Request) {
     const istOptions: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: true };
     const istTimeStr = new Intl.DateTimeFormat("en-US", istOptions).format(now);
     const currentLocalTime = istTimeStr.replace(/\u202F/g, ' ').replace(/\s+/g, ' '); // Normalize spaces
+    
+    const istDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+    const istDayStr = istDate.getDay().toString();
+
     const istOptions24: Intl.DateTimeFormatOptions = { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", hour12: false };
     const currentHourMin = new Intl.DateTimeFormat("en-US", istOptions24).format(now); // 24h format fallback
 
     for (const med of allMeds) {
       // Very basic MVP time check
       // For example, if med.time is "08:00 AM" or "08:00"
+      
+      let medFreq = med.frequency;
+      if (!medFreq || medFreq.toLowerCase() === "daily" || medFreq === "") medFreq = "0,1,2,3,4,5,6";
+      if (!medFreq.includes(istDayStr)) continue;
+
       const medTime = med.time.replace(/\u202F/g, ' ').replace(/\s+/g, ' ').trim().toUpperCase()
       
       if (medTime === currentLocalTime.toUpperCase() || medTime === currentHourMin) {

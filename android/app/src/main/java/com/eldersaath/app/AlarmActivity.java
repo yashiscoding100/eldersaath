@@ -195,8 +195,8 @@ public class AlarmActivity extends Activity {
 
         layout.addView(titleView);
         layout.addView(bodyView);
-        layout.addView(stopBtn);
         layout.addView(snoozeBtn);
+        layout.addView(stopBtn);
         setContentView(layout);
 
         try {

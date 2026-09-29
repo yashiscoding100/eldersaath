@@ -1,4 +1,6 @@
-"use client"
+﻿import os
+
+content = '''"use client"
 
 import { useEffect, useState } from "react"
 import { Capacitor, registerPlugin } from "@capacitor/core"
@@ -71,7 +73,7 @@ export function MandatoryPermissions() {
   }, [])
 
   const handleOpenBatterySettings = async () => {
-    alert("IMPORTANT FOR REDMI / SAMSUNG:\n\n1. Turn ON 'Autostart'\n2. Set Battery Saver to 'No Restrictions'\n3. Allow 'Display pop-up windows while running in background'.\n\nPress OK to open Settings now.");
+    alert("IMPORTANT FOR REDMI / SAMSUNG:\\n\\n1. Turn ON 'Autostart'\\n2. Set Battery Saver to 'No Restrictions'\\n3. Allow 'Display pop-up windows while running in background'.\\n\\nPress OK to open Settings now.");
     await AppPermissions.openAppSettings();
     setShowBatteryInstructions(true);
   }
@@ -92,7 +94,7 @@ export function MandatoryPermissions() {
         permStatus = await PushNotifications.requestPermissions()
       }
       if (permStatus.receive !== "granted") {
-        alert("To enable notifications:\n\n1. Open your phone's 'Settings' app\n2. Tap 'Apps'\n3. Find 'Elder Saath'\n4. Tap 'Notifications' and turn them ON")
+        alert("To enable notifications:\\n\\n1. Open your phone's 'Settings' app\\n2. Tap 'Apps'\\n3. Find 'Elder Saath'\\n4. Tap 'Notifications' and turn them ON")
       } else {
         await checkPermissions()
       }
@@ -179,3 +181,7 @@ export function MandatoryPermissions() {
     </div>
   )
 }
+'''
+
+with open('src/components/MandatoryPermissions.tsx', 'w', encoding='utf-8') as f:
+    f.write(content)

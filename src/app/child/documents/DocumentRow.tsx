@@ -15,7 +15,8 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm(`Are you sure you want to delete "${doc.title}"?`)) return
     
     setLoading(true)
@@ -34,7 +35,7 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
   }
 
   return (
-    <tr className="hover:bg-slate-50 transition group">
+    <tr className="hover:bg-slate-50 transition cursor-pointer" onClick={() => window.open(doc.fileUrl, "_blank")}>
       <td className="p-4 px-6 font-bold text-slate-900 flex items-center gap-3">
         <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
           {doc.fileType.includes("pdf") ? "📄" : "🖼️"}
@@ -48,17 +49,11 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
         {new Date(doc.uploadedAt).toLocaleDateString()}
       </td>
       <td className="p-4 px-6 text-right space-x-2">
-        <a 
-          href={doc.fileUrl} 
-          download={`${doc.title}.${doc.fileType.split('/')[1] || 'pdf'}`}
-          className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block opacity-0 group-hover:opacity-100"
-        >
-          View
-        </a>
+        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block">View</a>
         <button 
           onClick={handleDelete}
           disabled={loading}
-          className="text-red-600 hover:text-red-700 font-bold text-sm bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md transition disabled:opacity-50 opacity-0 group-hover:opacity-100"
+          className="text-red-600 hover:text-red-700 font-bold text-sm bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md transition disabled:opacity-50"
         >
           {loading ? "..." : "Delete"}
         </button>

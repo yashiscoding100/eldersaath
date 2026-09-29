@@ -44,6 +44,15 @@ public class AlarmActivity extends Activity {
         if (label == null) label = "EMERGENCY ALARM!";
         
         String body = getIntent().getStringExtra("body");
+
+        boolean stickyNotification = getIntent().getBooleanExtra("stickyNotification", true);
+        if (!stickyNotification) {
+            try {
+                android.app.NotificationManager notificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(99999);
+            } catch (Exception e) {}
+        }
+
         if (body == null) body = "Please check the notification for more details.";
 
         String snoozeText = getIntent().getStringExtra("snoozeText");

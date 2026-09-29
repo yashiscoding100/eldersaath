@@ -88,6 +88,9 @@ public class MyMessagingService extends MessagingService {
                 fullScreenIntent.putExtra("snoozeText", snoozeText);
                 fullScreenIntent.putExtra("actionText", actionText);
                 fullScreenIntent.putExtra("snoozeDuration", snoozeDuration);
+                boolean showSticky = true;
+                if (remoteMessage.getData().containsKey("stickyNotification")) { if ("false".equals(remoteMessage.getData().get("stickyNotification"))) showSticky = false; }
+                fullScreenIntent.putExtra("stickyNotification", showSticky);
                 if (elderId != null) fullScreenIntent.putExtra("elderId", elderId);
                 fullScreenIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -103,31 +106,18 @@ public class MyMessagingService extends MessagingService {
                 // Use a FIXED notification ID so duplicates just replace each other instead of stacking
                 int ALARM_NOTIFICATION_ID = 99999;
 
-                // Check if user requested sticky notification
-                boolean showSticky = true;
-                if (remoteMessage.getData().containsKey("stickyNotification")) {
-                    String stickyVal = remoteMessage.getData().get("stickyNotification");
-                    if ("false".equals(stickyVal)) {
-                        showSticky = false;
-                    }
-                }
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                        .setContentTitle(remoteMessage.getData().containsKey("actionText") ? remoteMessage.getData().get("actionText") : "ALARM")
+                        .setContentText(label)
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setCategory(NotificationCompat.CATEGORY_ALARM)
+                        .setFullScreenIntent(fullScreenPendingIntent, true)
+                        .setAutoCancel(true)
+                        .setOngoing(showSticky);
 
-                if (showSticky) {
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, channelId)
-                            .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                            .setContentTitle(remoteMessage.getData().containsKey("actionText") ? remoteMessage.getData().get("actionText") : "ALARM")
-                            .setContentText(label)
-                            .setPriority(NotificationCompat.PRIORITY_MAX)
-                            .setCategory(NotificationCompat.CATEGORY_ALARM)
-                            .setFullScreenIntent(fullScreenPendingIntent, true)
-                            .setAutoCancel(true)
-                            .setOngoing(true);
-
-                    notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
-                    Log.e("ALARM_DEBUG", "Sticky Notification Fired with FullScreenIntent!");
-                } else {
-                    Log.e("ALARM_DEBUG", "Sticky Notification Skipped by User Preference!");
-                }
+                notificationManager.notify(ALARM_NOTIFICATION_ID, builder.build());
+                Log.e("ALARM_DEBUG", "Notification Fired with FullScreenIntent! Sticky: " + showSticky);
                 
                 // FORCE the Activity to start directly (needs SYSTEM_ALERT_WINDOW permission)
                 try {

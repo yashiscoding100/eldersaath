@@ -16,16 +16,6 @@ export default async function ChildThingsToDo() {
   const relationship = await getActiveElder(session.user.id)
 
   if (!relationship) {
-  
-  const formatFreq = (f: string) => {
-    if (!f || f.toUpperCase() === "DAILY" || f === "0,1,2,3,4,5,6") return "Every Day";
-    if (f.toUpperCase() === "WEEKLY") return "Weekly";
-    if (f.toUpperCase() === "MONTHLY") return "Monthly";
-    if (f.toUpperCase() === "ONCE") return "Once";
-    const map: any = { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" };
-    return f.split(",").map(d => map[d.trim()]).filter(Boolean).join(", ");
-  }
-
   return (
       <div className="min-h-screen p-6 flex justify-center items-center">
         <p className="text-gray-500">Please link an elder account first.</p>

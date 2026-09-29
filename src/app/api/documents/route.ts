@@ -6,22 +6,19 @@ import { uploadDocument, deleteDocument } from "@/lib/storage"
 export async function POST(req: Request) {
   const session = await auth()
   
-  if (!session || session.user.role !== "CHILD") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-  }
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
 
   try {
     const { elderId, title, fileType, fileData } = await req.json()
 
     // Authorization Check
-    const relationship = await prisma.caregiverRelationship.findUnique({
-      where: {
-        elderId_childId: { elderId, childId: session.user.id }
-      }
-    })
-
-    if (!relationship || relationship.status !== "ACTIVE") {
-       return NextResponse.json({ message: "Unauthorized for this elder" }, { status: 403 })
+    if (session.user.role === "CHILD") {
+      const relationship = await prisma.caregiverRelationship.findUnique({
+        where: { elderId_childId: { elderId, childId: session.user.id } }
+      })
+      if (!relationship || relationship.status !== "ACTIVE") return NextResponse.json({ message: "Unauthorized" }, { status: 403 })
+    } else if (session.user.role === "ELDER" && session.user.id !== elderId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
     const safeFilename = `${elderId}-${Date.now()}`
@@ -76,9 +73,7 @@ export async function GET(req: Request) {
 export async function DELETE(req: Request) {
   const session = await auth()
   
-  if (!session || session.user.role !== "CHILD") {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
-  }
+  if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
 
   try {
     const { searchParams } = new URL(req.url)
@@ -93,14 +88,13 @@ export async function DELETE(req: Request) {
     if (!document) return NextResponse.json({ message: "Not found" }, { status: 404 })
 
     // Security Authorization Check - Ensure this child actually manages this elder
-    const relationship = await prisma.caregiverRelationship.findUnique({
-      where: {
-        elderId_childId: { elderId: document.elderId, childId: session.user.id }
-      }
-    })
-
-    if (!relationship || relationship.status !== "ACTIVE") {
-       return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+    if (session.user.role === "CHILD") {
+      const relationship = await prisma.caregiverRelationship.findUnique({
+        where: { elderId_childId: { elderId: document.elderId, childId: session.user.id } }
+      })
+      if (!relationship || relationship.status !== "ACTIVE") return NextResponse.json({ message: "Forbidden" }, { status: 403 })
+    } else if (session.user.role === "ELDER" && session.user.id !== document.elderId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
     await deleteDocument(document.fileUrl)

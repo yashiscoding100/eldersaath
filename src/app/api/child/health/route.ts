@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(req: Request) {
   const session = await auth()
   
-  if (!session || session.user.role !== "CHILD") {
+  if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
   }
 
@@ -14,12 +14,13 @@ export async function POST(req: Request) {
     const { elderId, bp, sugar, spo2, pulse } = data
     
     // Verify relationship
-    const rel = await prisma.caregiverRelationship.findFirst({
-      where: { childId: session.user.id, elderId, status: "ACTIVE" }
-    })
-    
-    if (!rel) {
-      return NextResponse.json({ message: "Not linked to this elder" }, { status: 403 })
+    if (session.user.role === "CHILD") {
+      const rel = await prisma.caregiverRelationship.findFirst({
+        where: { childId: session.user.id, elderId, status: "ACTIVE" }
+      })
+      if (!rel) return NextResponse.json({ message: "Not linked to this elder" }, { status: 403 })
+    } else if (session.user.role === "ELDER" && session.user.id !== elderId) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 })
     }
 
     const measurements: { type: string; value: string; unit: string }[] = []

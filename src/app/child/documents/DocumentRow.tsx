@@ -15,6 +15,32 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
 
+    const handleView = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    
+    if (doc.fileUrl.startsWith('http')) {
+      window.open(doc.fileUrl, '_blank');
+      return;
+    }
+
+    try {
+      const arr = doc.fileUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || doc.fileType;
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while(n--){
+          u8arr[n] = bstr.charCodeAt(n);
+      }
+      const blob = new Blob([u8arr], {type: mime});
+      const blobUrl = URL.createObjectURL(blob);
+      window.open(blobUrl, '_blank');
+    } catch(err) {
+      console.error(err);
+      alert("Unable to open document.");
+    }
+  }
+
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm(`Are you sure you want to delete "${doc.title}"?`)) return
@@ -35,7 +61,7 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
   }
 
   return (
-    <tr className="hover:bg-slate-50 transition cursor-pointer" onClick={() => window.open(doc.fileUrl, "_blank")}>
+    <tr className="hover:bg-slate-50 transition cursor-pointer" onClick={() => handleView()}>
       <td className="p-4 px-6 font-bold text-slate-900 flex items-center gap-3">
         <div className="w-8 h-8 rounded-md bg-slate-100 flex items-center justify-center text-slate-500">
           {doc.fileType.includes("pdf") ? "📄" : "🖼️"}
@@ -49,7 +75,7 @@ export function DocumentRow({ doc }: { doc: MedicalDocument }) {
         {new Date(doc.uploadedAt).toLocaleDateString()}
       </td>
       <td className="p-4 px-6 text-right space-x-2">
-        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block">View</a>
+        <button onClick={handleView} className="text-blue-600 hover:text-blue-700 font-bold bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition inline-block">View</button>
         <button 
           onClick={handleDelete}
           disabled={loading}

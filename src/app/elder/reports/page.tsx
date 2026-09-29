@@ -1,5 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { PrintButton } from "@/app/child/reports/PrintButton"
 import { format } from "date-fns"
@@ -47,9 +49,14 @@ export default async function ElderReports({
   return (
     <div className="space-y-6">
       <header className="flex justify-between items-center mb-6 print:hidden">
-        <div>
+        <div className="flex items-center gap-4">
+          <Link href="/elder/home" className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+            <ArrowLeft className="w-6 h-6 text-slate-700" />
+          </Link>
+          <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Health Reports</h1>
           <p className="text-sm text-slate-500 mt-1">Generate and export automated health analytics.</p>
+        </div>
         </div>
         <div className="flex gap-4 items-center">
           <div className="bg-slate-100 p-1 rounded-lg flex text-sm font-medium">

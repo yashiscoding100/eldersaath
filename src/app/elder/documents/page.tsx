@@ -1,6 +1,8 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 import { UploadDocumentForm } from "@/app/child/documents/UploadDocumentForm"
 import { DocumentRow } from "@/app/child/documents/DocumentRow"
 
@@ -21,9 +23,14 @@ export default async function ElderDocuments() {
   return (
     <div className="space-y-6">
       <header className="flex justify-between items-center mb-6">
-        <div>
+        <div className="flex items-center gap-4">
+          <Link href="/elder/home" className="p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition">
+            <ArrowLeft className="w-6 h-6 text-slate-700" />
+          </Link>
+          <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Medical Vault</h1>
           <p className="text-sm text-slate-500 mt-1">Manage documents for {session.user.name}</p>
+        </div>
         </div>
         <div className="flex gap-4 items-center">
           <UploadDocumentForm elderId={session.user.id} />

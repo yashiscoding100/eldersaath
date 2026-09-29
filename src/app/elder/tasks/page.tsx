@@ -27,6 +27,16 @@ export default async function ElderThingsToDo() {
     }
   })
 
+  
+  const formatFreq = (f: string) => {
+    if (!f || f.toUpperCase() === "DAILY" || f === "0,1,2,3,4,5,6") return "Every Day";
+    if (f.toUpperCase() === "WEEKLY") return "Weekly";
+    if (f.toUpperCase() === "MONTHLY") return "Monthly";
+    if (f.toUpperCase() === "ONCE") return "Once";
+    const map: any = { "0": "Sun", "1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu", "5": "Fri", "6": "Sat" };
+    return f.split(",").map(d => map[d.trim()]).filter(Boolean).join(", ");
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
       <div className="w-full max-w-md bg-white p-6 rounded-3xl shadow-sm mb-6 text-center relative">
@@ -53,14 +63,17 @@ export default async function ElderThingsToDo() {
               <div key={task.id} className={`p-6 rounded-2xl shadow-sm border flex items-center justify-between transition-colors ${isCompleted ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'}`}>
                 <div>
 
-                    {(task as any).time && (
-                      <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      {(task as any).time && (
                         <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full font-bold text-sm">
                           {(task as any).time}
                         </span>
-                        {(task as any).triggerAlarm && <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md"><Bell className="w-3 h-3" /> ALARM</span>}
-                      </div>
-                    )}
+                      )}
+                      <span className="inline-block px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold text-sm">
+                        {formatFreq(task.frequency)}
+                      </span>
+                      {(task as any).triggerAlarm && <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md"><Bell className="w-3 h-3" /> ALARM</span>}
+                    </div>
                   <h2 className={`text-2xl font-bold ${isCompleted ? 'text-green-800 line-through opacity-70' : 'text-gray-900'}`}>
                     {task.title}
                   </h2>

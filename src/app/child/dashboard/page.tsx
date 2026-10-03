@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveElder } from "@/lib/activeElder"
 
 export const dynamic = 'force-dynamic'
 import { redirect } from "next/navigation"
@@ -28,6 +29,8 @@ export default async function ChildDashboard() {
     where: { childId: session.user.id },
     include: { elder: { include: { elderProfile: true } } }
   })
+
+  const activeRelationship = await getActiveElder(session.user.id)
 
   const elderData = await Promise.all(
     relationships.filter(r => r.status === "ACTIVE").map(async (rel) => {

@@ -130,10 +130,10 @@ export function ChildLayoutShell({
                           onClick={() => {
                             // Bypass Capacitor's network interceptor dropping Set-Cookie headers
                             // by setting the cookie manually on the client side!
-                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=Lax";
+                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=None; Secure";
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
-                            window.location.reload();
+                            setTimeout(() => { window.location.reload(); }, 500);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                         >
@@ -244,10 +244,10 @@ export function ChildLayoutShell({
                           onClick={() => {
                             // Bypass Capacitor's network interceptor dropping Set-Cookie headers
                             // by setting the cookie manually on the client side!
-                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=Lax";
+                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=None; Secure";
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
-                            window.location.reload();
+                            setTimeout(() => { window.location.reload(); }, 500);
                           }}
                           className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors flex justify-between items-center ${elder.id === activeElderId ? "bg-blue-50 text-blue-700" : "text-slate-700 hover:bg-slate-50"}`}
                         >

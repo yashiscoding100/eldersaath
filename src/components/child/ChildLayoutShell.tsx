@@ -127,8 +127,10 @@ export function ChildLayoutShell({
                   {elders.map(elder => (
                     <button 
                           key={elder.id}
-                          onClick={async () => {
-                            await setActiveElderAction(elder.id, pathname);
+                          onClick={() => {
+                            // Bypass Capacitor's network interceptor dropping Set-Cookie headers
+                            // by setting the cookie manually on the client side!
+                            document.cookie = ctiveElderId=; path=/; max-age=2592000; SameSite=Lax;
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
                             window.location.reload();
@@ -239,8 +241,10 @@ export function ChildLayoutShell({
                       {elders.map(elder => (
                         <button 
                           key={elder.id}
-                          onClick={async () => {
-                            await setActiveElderAction(elder.id, pathname);
+                          onClick={() => {
+                            // Bypass Capacitor's network interceptor dropping Set-Cookie headers
+                            // by setting the cookie manually on the client side!
+                            document.cookie = ctiveElderId=; path=/; max-age=2592000; SameSite=Lax;
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
                             window.location.reload();

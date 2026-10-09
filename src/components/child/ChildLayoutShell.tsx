@@ -130,7 +130,7 @@ export function ChildLayoutShell({
                           onClick={() => {
                             // Bypass Capacitor's network interceptor dropping Set-Cookie headers
                             // by setting the cookie manually on the client side!
-                            document.cookie = ctiveElderId=; path=/; max-age=2592000; SameSite=Lax;
+                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=Lax";
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
                             window.location.reload();
@@ -244,7 +244,7 @@ export function ChildLayoutShell({
                           onClick={() => {
                             // Bypass Capacitor's network interceptor dropping Set-Cookie headers
                             // by setting the cookie manually on the client side!
-                            document.cookie = ctiveElderId=; path=/; max-age=2592000; SameSite=Lax;
+                            document.cookie = "activeElderId=" + elder.id + "; path=/; max-age=2592000; SameSite=Lax";
                             setElderDropdownOpen(false);
                             setMobileMenuOpen(false);
                             window.location.reload();

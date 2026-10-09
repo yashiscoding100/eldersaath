@@ -11,9 +11,9 @@ export async function GET(req: Request) {
       const cookieStore = await cookies()
       cookieStore.set("activeElderId", elderId, {
         path: "/",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        httpOnly: false,
+        secure: true,
+        sameSite: "none",
         maxAge: 30 * 24 * 60 * 60 // 30 days
       })
     }

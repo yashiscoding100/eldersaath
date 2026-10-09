@@ -72,6 +72,24 @@ try {
 }
 
 export async function sendPushNotification(userId: string, payload: Record<string, unknown>) {
+  // Force an in-app database notification for the Bell icon
+  // This ensures iOS, Windows, and Web users get the alert even without native FCM/WebPush subscriptions
+  try {
+    const title = (payload.title as string) || (payload.label as string) || "Notification";
+    const body = (payload.body as string) || "";
+    await prisma.appNotification.create({
+      data: {
+        userId,
+        title,
+        message: body,
+        type: payload.type === "ALARM" || payload.type === "EMERGENCY" ? "ALERT" : "INFO",
+        link: (payload.url as string) || null
+      }
+    });
+  } catch (dbErr) {
+    console.error("Failed to save AppNotification", dbErr);
+  }
+
   const subscriptions = await prisma.pushSubscription.findMany({
     where: { userId }
   })
